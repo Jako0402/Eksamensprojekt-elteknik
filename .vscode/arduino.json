@@ -1,6 +1,0 @@
-{
-    "board": "arduino:avr:uno",
-    "port": "COM5",
-    "programmer": "arduino:avrisp",
-    "sketch": "Arduino\\PhototestInterupt\\PhototestInterupt.ino"
-}
