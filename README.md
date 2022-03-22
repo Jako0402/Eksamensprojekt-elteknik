@@ -8,7 +8,7 @@ Her findes demo, små test og delelemeter til Arduino
 Test hvor pin 2 på Arduinoen bruges til at opfange ændringer i en "photogate"
 
 ### TransceiverTest1
-Test hvor én Arduino sender teksten "Hello World" til en anden Arduino
+Test hvor en Arduino sender teksten "Hello World" til en anden Arduino
 
 ## Processing
 Her findes demo, små test og delelemeter til Processing
