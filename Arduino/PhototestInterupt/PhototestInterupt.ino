@@ -1,6 +1,7 @@
 const byte interruptPin = 2;
 const byte interruptPin2 = 3;
 
+//Her er noget mere kode
 
 volatile int count = 0; 
 volatile int count2 = 0; 
