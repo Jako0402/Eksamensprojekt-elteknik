@@ -9,18 +9,14 @@ volatile int count2 = 0;
 void setup() {
   Serial.begin(9600);
   attachInterrupt(digitalPinToInterrupt(interruptPin), add, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(interruptPin2), add2, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(interruptPin2), add, CHANGE);
 }
 
 void loop() {
-  Serial.println(count + " " + count2);
+  Serial.println(count);
   delay(10);
 }
 
 void add() {
   count++;
-}
-
-void add2() {
-  count2++;
 }
