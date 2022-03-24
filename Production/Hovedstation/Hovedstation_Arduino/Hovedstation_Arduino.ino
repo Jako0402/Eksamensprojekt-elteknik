@@ -11,8 +11,6 @@ RF24 radio(7, 8);  // CE, CSN
 const byte address[6] = "00001";
 
 void setup() {
-    while (!Serial)
-        ;
     Serial.begin(9600);
 
     radio.begin();
@@ -25,10 +23,15 @@ void setup() {
 }
 
 void loop() {
-    // Read the data if available in buffer
     if (radio.available()) {
         char text[32] = {0};
         radio.read(&text, sizeof(text));
-        Serial.println(text);
+        Serial.print(text);
+        Serial.print('!');
+    }
+
+    if (Serial.available() > 0) {
+        byte c = Serial.read();  // c is current char
+        Serial.print(char(c));
     }
 }
