@@ -7,16 +7,22 @@
 // create an RF24 object
 RF24 radio(7, 8);  // CE, CSN
 
+String stringFromPC = "";
+
+long maxTimeSerial = 500;
+
 // address through which two modules communicate.
-const byte address[6] = "00001";
+const byte addresses[][6] = {"00001", "00002"};
 
 void setup() {
     Serial.begin(9600);
+    Serial.setTimeout(maxTimeSerial);
 
-    radio.begin();
+    radio.begin();  
 
     // set the address
-    radio.openReadingPipe(0, address);
+    radio.openReadingPipe(1, addresses[0]); // 00001
+    radio.openWritingPipe(addresses[1]); // 00002
 
     // Set module as receiver
     radio.startListening();
@@ -27,11 +33,13 @@ void loop() {
         char text[32] = {0};
         radio.read(&text, sizeof(text));
         Serial.print(text);
-        Serial.print('!');
     }
 
     if (Serial.available() > 0) {
-        byte c = Serial.read();  // c is current char
-        Serial.print(char(c));
+        stringFromPC = Serial.readString();
+        Serial.print(stringFromPC);
+        radio.stopListening();
+        radio.write(&stringFromPC, sizeof(stringFromPC));
+        radio.startListening();
     }
 }
