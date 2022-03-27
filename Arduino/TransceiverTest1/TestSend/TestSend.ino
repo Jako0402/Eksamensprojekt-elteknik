@@ -24,7 +24,7 @@ void setup()
 void loop()
 {
   //Send message to receiver
-  const char text[] = "Hello World";
+  const char text[] = "?1;2;3!g";
   radio.write(&text, sizeof(text));
   
   delay(1000);
