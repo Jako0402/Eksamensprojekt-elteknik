@@ -1,21 +1,12 @@
 
 int start = 1000;
-int kor = 1000;
+int drive = 1000;
 int pause = 1000;
 
-void setup() {
 
-  pinMode(5, OUTPUT);   //Venstre hjul
-  pinMode(6, OUTPUT);   //Venstre hjul
-  pinMode(9, OUTPUT);   //Højre hjul
-  pinMode(10, OUTPUT);   //Højre hjul
-
-  Serial.begin(9600);
-
-}
-
-void loop() {
-
+void driveProgram() {
+  encodersValue();
+  
   for (int i = 0; i < start / 2; i++) {
     digitalWrite(5, HIGH);
     digitalWrite(9, HIGH);
@@ -24,19 +15,22 @@ void loop() {
     digitalWrite(9, LOW);
     delay(1);
   }
-  Serial.println("Start Frem");
+
+  encodersValue();
 
   digitalWrite(5, HIGH);
   digitalWrite(9, HIGH);
-  Serial.println("Frem");
 
-  delay(kor);
+  delay(drive);
+
+  encodersValue();
 
   digitalWrite(5, LOW);
   digitalWrite(9, LOW);
-  Serial.println("Pause");
 
   delay(pause);
+
+  encodersValue();
 
   for (int i = 0; i < start / 2; i++) {
     digitalWrite(6, HIGH);
@@ -46,17 +40,25 @@ void loop() {
     digitalWrite(10, LOW);
     delay(1);
   }
-  Serial.println("Start tilbage");
-  
+
+  encodersValue();
+
   digitalWrite(6, HIGH);
   digitalWrite(10, HIGH);
-  Serial.println("Tilbage");
 
-  delay(kor);
+  delay(drive);
+
+  encodersValue();
 
   digitalWrite(6, LOW);
   digitalWrite(10, LOW);
-  Serial.println("Pause");
 
   delay(pause);
+}
+
+void  encodersValue() {
+  Serial.print("Højre hjul ");
+  Serial.print(countRightEncoder);
+  Serial.print("   Venstre hjul ");
+  Serial.println(countLeftEncoder);
 }
