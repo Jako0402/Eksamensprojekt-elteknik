@@ -5,7 +5,7 @@ Serial myPort;
 String inString;
 String text = "";
 boolean newData = false;
-int[] expectedDataLengthArray = {3, 2, 3};
+int[] expectedDataLengthArray = {0, 2, 3};
 
 void setup() {
     size(1080, 720);
@@ -37,7 +37,9 @@ void keyPressed() {
     if (key == ENTER) {
         myPort.write(text); 
         text = "";
-    } else{
+    } else if (key == CODED){
+        
+    }else{
         text += key;
     }
 }
@@ -49,6 +51,7 @@ void keyPressed() {
 3 = ';' not found
 4 = '!' not found
 5 = Wrong checksum
+6 = Wrong command
 */
 int checkData(String stringToCheck) {
     println("Check: " + stringToCheck);
@@ -59,7 +62,7 @@ int checkData(String stringToCheck) {
     String commandIDStr = str(stringToCheck.charAt(index));
     if (!isInt(commandIDStr)) return 2;
     int commandID = int(commandIDStr);
-    
+    if (commandID >= expectedDataLengthArray.length) return 6;
     int expectedDataLength = expectedDataLengthArray[commandID];
     //println("expectedDataLength: " + expectedDataLength);
     
@@ -95,9 +98,9 @@ int checkData(String stringToCheck) {
 
 
     index++;
-    println("expectedCS: " + char(expectedCS));
+    println("expectedCS: " + char(expectedCS) + " (as int: " + expectedCS + ")");
     println("receivedCS: " + stringToCheck.charAt(index));
-    if (stringToCheck.charAt(index) != char(expectedCS)) return 5;
+    if (stringToCheck.charAt(index) != expectedCS) return 5;
 
 
     return 0;
