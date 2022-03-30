@@ -5,7 +5,7 @@ String text = "";
 int rotation = 0;
 HashMap<String, ArrayList<DataPoint>> dataMap = new HashMap<String, ArrayList<DataPoint>>();
 boolean obstacle = true;
-
+String[] lastNeighbors = {};
 //Demo-test
 //DataPoint dp = new DataPoint(1, 1, 1);
 //ArrayList<DataPoint> al = new ArrayList<DataPoint>();
@@ -27,6 +27,7 @@ void setup() {
 void draw() {
     background(100); 
     drawGrid();
+    drawlastNeighbors();
     
     fill(0);
     text(text, 10, 100);
@@ -38,18 +39,20 @@ void draw() {
 }
 
 
-
 void drawGrid() {
     for (int i = 0; i < width / 100; i++) {
         for (int j = 0; j < height / 100; j++) {
             String key = str(i) + "," + str(j);
             //println(key);
             ArrayList<DataPoint> dataMapAL = dataMap.get(key);
+            
             if (dataMapAL == null) {
                 fill(255);
                 rect(i * 100, j * 100, 100, 100);
             } else{
                 //println(dataMapAL.get(10).getClass().getSimpleName()); Det er et datapoint
+                fill(150);
+                rect(i * 100, j * 100, 100, 100);
                 for (DataPoint element : dataMapAL) {
                     element.display();
                 }
@@ -58,72 +61,45 @@ void drawGrid() {
     } 
 }
 
+
 void addDataPoint(int xpos, int ypos, float angle) {
     int xKey = xpos / 10;
     int yKey = ypos / 10;
     String key = str(xKey) + "," + str(yKey);
-    println(key);
+    println("Key: " + key);
+    
+    lastNeighbors = findNeighbors(key, 3);
     
     DataPoint dpToAdd = new DataPoint(xpos, ypos, angle, obstacle);
     
     ArrayList dataMapAL = dataMap.get(key);
     if (dataMapAL == null) {
-        println("First point in square");
+        //println("First point in square");
         
         ArrayList<DataPoint> alToAdd = new ArrayList<DataPoint>();
         alToAdd.add(dpToAdd);
         dataMap.put(key, alToAdd);
     } else{
-        println("Existing point in square");
+        //println("Existing point in square");
         dataMapAL.add(dpToAdd);
     }
 }
 
 
-void keyPressed() {
-    if (key == ENTER) {
-        keyDoStuff();
-        text = "";
-    } else if (key == CODED) {
-        if (keyCode  == CONTROL) obstacle = !obstacle;
-    } else if (key == BACKSPACE) {
-        text = text.substring(0, text.length() - 1);
-    } else{
-        text += key;
+
+void drawlastNeighbors() {
+    for (String neighborKey : lastNeighbors) {
+        if (neighborKey == "") continue;
+        String[] keys = split(neighborKey, ',');
+        int[] keysAsInt = {int(keys[0]), int(keys[1])};
+        fill(0);
+        textSize(10);
+        text("N", keysAsInt[0]*100+50, keysAsInt[1]*100+20);
+        textSize(40);
     }
 }
 
 
-void keyDoStuff() {
-    String toParse = text.toLowerCase();
-    println(toParse);
-    if (match(toParse, "clear") != null) {
-        println("clear");
-        dataMap = new HashMap<String, ArrayList<DataPoint>>();
-    }
-}
-
-
-void mouseWheel(MouseEvent event) {
-    //https://processing.org/reference/mouseWheel_.html
-    int e = event.getCount();
-    //1 = mod bruger
-    //-1 = væk fra bruger
-    //println(e);
-    if (e > 0) {
-        rotation += 10;
-        if (rotation > 350) rotation = 0;
-    } else{
-        rotation -= 10;
-        if (rotation < 0) rotation = 350;
-    }
-}
-
-
-void mousePressed() {
-    //print("MOUSE");
-    addDataPoint(mouseX / 10, mouseY / 10, rotation);
-}
 
 class DataPoint {
     int xpos, ypos;
