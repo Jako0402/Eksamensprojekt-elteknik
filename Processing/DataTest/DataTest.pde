@@ -3,9 +3,15 @@
 
 String text = "";
 int rotation = 0;
-HashMap<String, ArrayList<DataPoint>> dataMap = new HashMap<String, ArrayList<DataPoint>>();
-boolean obstacle = true;
+boolean obstacle = false;
 String[] lastNeighbors = {};
+HashMap<String, ArrayList<DataPoint>> dataMap = new HashMap<String, ArrayList<DataPoint>>();
+ArrayList<SimpleWallSegment> simpleWallList = new ArrayList<SimpleWallSegment>();
+int[] lastObs = new int[2];
+float lastObsAngle = 0;
+int[] lastPos = {0, 0};
+int[] target = {0,0};
+
 //Demo-test
 //DataPoint dp = new DataPoint(1, 1, 1);
 //ArrayList<DataPoint> al = new ArrayList<DataPoint>();
@@ -28,14 +34,16 @@ void draw() {
     background(100); 
     drawGrid();
     drawlastNeighbors();
+    circle(target[0]*10, target[1]*10, 24);
     
     fill(0);
     text(text, 10, 100);
-    text(mouseX / 10 + " - " + mouseY / 10, 10, 200);
-    text(rotation, 10, 300);
+    text("mouse: " + mouseX / 10 + ", " + mouseY / 10, 10, 200);
+    text("roration: " + rotation, 10, 300);
     text("obstacle: " + obstacle, 10, 400);
-    
-    
+    text("lastPos: " + lastPos[0] + ", " + lastPos[1], 10, 500);
+    text("lastObs: " + lastObs[0] + ", " + lastObs[1], 10, 600);
+    text("target: " + target[0] + ", " + target[1], 10, 700);
 }
 
 
@@ -68,7 +76,17 @@ void addDataPoint(int xpos, int ypos, float angle) {
     String key = str(xKey) + "," + str(yKey);
     println("Key: " + key);
     
-    lastNeighbors = findNeighbors(key, 3);
+    lastNeighbors = findNeighbors(key, 2);
+    lastPos[0] = xpos;
+    lastPos[1] = ypos;
+    
+    if (obstacle) {
+        addSimpelWall(xpos, ypos, angle);
+        lastObs[0] = xpos;
+        lastObs[1] = ypos;
+        lastObsAngle = angle;
+    }
+    
     
     DataPoint dpToAdd = new DataPoint(xpos, ypos, angle, obstacle);
     
@@ -86,6 +104,28 @@ void addDataPoint(int xpos, int ypos, float angle) {
 }
 
 
+void addSimpelWall(int xpos, int ypos, float angle) {
+    
+    for (String neighborKey : lastNeighbors) {
+        if (neighborKey == "") continue;
+        
+        ArrayList<DataPoint> dataMapAL = dataMap.get(neighborKey);
+        if (dataMapAL == null) continue;
+        
+        for (DataPoint element : dataMapAL) {
+            if (abs(element.angle - angle) < 20 && element.obstacle) {
+                
+                SimpleWallSegment wallToAdd = new SimpleWallSegment(xpos * 10, ypos * 10, element.xpos, element.ypos);
+                println("Wall: " + xpos + " " + ypos + " " + element.xpos + " " + element.ypos);
+                simpleWallList.add(wallToAdd);
+            }
+            
+            
+        }
+        
+    }    
+}
+
 
 void drawlastNeighbors() {
     for (String neighborKey : lastNeighbors) {
@@ -94,8 +134,12 @@ void drawlastNeighbors() {
         int[] keysAsInt = {int(keys[0]), int(keys[1])};
         fill(0);
         textSize(10);
-        text("N", keysAsInt[0]*100+50, keysAsInt[1]*100+20);
+        text("N", keysAsInt[0] * 100 + 50, keysAsInt[1] * 100 + 20);
         textSize(40);
+    }
+    
+    for (SimpleWallSegment wall : simpleWallList) {
+        line(wall.x1, wall.y1, wall.x2, wall.y2);
     }
 }
 
@@ -135,3 +179,19 @@ class DataPoint {
     }
 }
 
+
+class SimpleWallSegment {
+    int x1, y1, x2, y2;
+    //ArrayList<DataPoint> obstaclesInModel;
+    
+    SimpleWallSegment(int x1, int y1, int x2, int y2) {
+        //obstaclesInModel = new ArrayList<DataPoint>();
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        
+    }
+    
+    
+}

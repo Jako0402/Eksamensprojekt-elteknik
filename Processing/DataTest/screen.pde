@@ -5,7 +5,10 @@ void keyPressed() {
     } else if (key == CODED) {
         if (keyCode  == CONTROL) obstacle = !obstacle;
     } else if (key == BACKSPACE) {
+        if (text.length() < 1) return;
         text = text.substring(0, text.length() - 1);
+    } else if (key == TAB) {
+        calculateTarget();
     } else{
         text += key;
     }
@@ -18,6 +21,8 @@ void keyDoStuff() {
     if (match(toParse, "clear") != null) {
         println("clear");
         dataMap = new HashMap<String, ArrayList<DataPoint>>();
+        simpleWallList = new ArrayList<SimpleWallSegment>();
+        
     }
 }
 

@@ -27,9 +27,9 @@ class UIElement {
         children = new ArrayList<UIElement>();
     }
     
-    void displayElements() {
+    void display() {
         for (UIElement element : children) {
-            element.displayElements();
+            element.display();
         }
     }
     
@@ -59,7 +59,7 @@ class TestBox extends UIElement {
     }
     
     @Override
-    void displayElements() {
+    void display() {
         rect(origoX, origoY, componentWidth, componentHeight);
     }
 }
