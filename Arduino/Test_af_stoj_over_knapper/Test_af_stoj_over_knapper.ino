@@ -30,26 +30,32 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(interruptPin), add, CHANGE);    // Tæller encoderen for venstre hjul
   attachInterrupt(digitalPinToInterrupt(interruptPin2), add2, CHANGE);  // Tæller encoderen for højre hjul
 
-  left_motor.drive(120);    //hastigheden kan være
-  right_motor.drive(120);   //mellem -256 og 256
+  left_motor.forward(150);
+  right_motor.forward(150);
 }
 
 void loop() {
 
-  for (int i = 0; i < 5; i++) {
-    byte noiseCount = 0;
-    while (digitalRead(14 + i) && noiseCount < 20) {
-      noiseCount++;
-    }
-    if (noiseCount > 5) {
-      left_motor.drive(-120);
-      right_motor.drive(-120);
-      Serial.print("Knap ");
+  for (int i = 2; i < 3; i++) {
+    if (digitalRead(14 + i) == HIGH) {
+      left_motor.forward(0);
+      right_motor.forward(0);
+      Serial.println(" ");
+      Serial.print("FEJL Knap ");
       Serial.print(i + 1);
+      Serial.print(" = ");
+      Serial.println(analogRead(14 + i));
+      for (int i = 0; i < 5; i++) {
+        Serial.print("Knap ");
+        Serial.print(1 + i);
+        Serial.print(" = ");
+        Serial.println(analogRead(14 + i));
+      }
+      delay(200);
     }
   }
-}
 
+}
 
 void pins() {
   pinMode(interruptPin, INPUT);      // Højre encoder

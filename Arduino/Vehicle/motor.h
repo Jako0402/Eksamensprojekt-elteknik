@@ -2,11 +2,10 @@
 
 class motor {
   public:
-    short vehicle_speed;
     motor(byte forward_pin, byte backward_pin);
-    void forward(short vehicle_speed);
-    void backward(short vehicle_speed);
-    void drive(short vehicle_speed);
+    void forward(int vehicle_speed);
+    void backward(int vehicle_speed);
+    void drive(int vehicle_speed);
 
   private:
     byte forward_pin;  byte backward_pin; 
