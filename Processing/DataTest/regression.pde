@@ -1,5 +1,5 @@
 void calculateTarget() {
-    println("calculate new taget");
+    println("calculate new taget"); //Back
     if (lastPos[0] / 10 == lastObs[0] / 10 && lastPos[1] / 10 == lastObs[1] / 10) {
         println("Same square ");
         float dx = 15 * sin(lastObsAngle * (PI / 180));
@@ -8,21 +8,21 @@ void calculateTarget() {
         
         target[0] = lastObs[0] + int( -dx);
         target[1] = lastObs[1] + int( -dy);
-    } else if (dist(lastPos[0], lastPos[1], lastObs[0], lastObs[1]) < 30) {
+    } else if (dist(lastPos[0], lastPos[1], lastObs[0], lastObs[1]) < 30) { //Along
         float newAngle = lastObsAngle + 90;
         float dx = 30 * sin(newAngle * (PI / 180));
         float dy = 30 * cos(newAngle * (PI / 180));
         println("dx: " + dx + " - dy: " + dy);
         
         target[0] = lastPos[0] + int( -dx);
-        target[1] = lastPos[1] + int( - dy);
-    } else{
+        target[1] = lastPos[1] + int( -dy);
+    } else{ //Foreward
         float newAngle = lastObsAngle - 90;
         float dx = 30 * cos(newAngle * (PI / 180));
         float dy = 30 * sin(newAngle * (PI / 180));
         println("dx: " + dx + " - dy: " + dy);
         
-        target[0] = lastPos[0] + int( -dx);
-        target[1] = lastPos[1] + int( - dy);  
+        target[0] = lastPos[0] + int(dx);
+        target[1] = lastPos[1] + int( -dy);  
     }
 }
