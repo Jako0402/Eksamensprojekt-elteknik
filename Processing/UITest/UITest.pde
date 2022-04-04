@@ -1,6 +1,7 @@
 Row row = new Row(0, 0, 0, 0);
 
 void setup() {
+    surface.setResizable(true);
     size(1080, 720);
     textSize(40);
     
@@ -16,7 +17,7 @@ void setup() {
 void draw() {
     background(100); 
     row.display();
-
+    
     int[] mouse = {mouseX, mouseY};
     row.getChild(0).setOrigo(mouse);
 }
@@ -43,18 +44,18 @@ class UIElement {
         children.add(elementToAdd);
     }
     
-    void updateChildOrigo(int[] newOrigo) {
-        for (UIElement element : children) {
-            element.display();
-        }
-    }
-
     void setOrigo(int[] newOrigo) {
         if (newOrigo.length != 2) println("ERROR: newOrigo must have 2 values");
         origoX = newOrigo[0];
         origoY = newOrigo[1];
     }
-
+    
+    void setComponentSize(int[] newSize) {
+        if (newSize.length != 2) println("ERROR: newSize must have 2 values");
+        componentWidth = newSize[0];
+        componentHeight = newSize[1];
+    }
+    
     UIElement getChild(int index) {
         if (index >= children.size()) {
             println("ERROR: getChild is out of index");
@@ -62,12 +63,43 @@ class UIElement {
         }
         return children.get(index);
     }
+    
+    void rescaleChildren() {
+        for (UIElement element : children) {
+            element.rescaleChildren();
+        }
+    }
 }
 
 
 class Row extends UIElement {
+    int[] colWidth;
+    int totalColWidth = 0;
     Row(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
+        colWidth = new int[12]; //One row cannot have more than 12 elements. Might need rework
+    }
+    
+    @Override
+    void addChildToList(UIElement elementToAdd) {
+        super.addChildToList(elementToAdd);
+        colWidth[children.size() - 1] = 1;     
+    }
+    
+    @Override
+    void rescaleChildren() {
+        totalColWidth = 0;
+        for (int i : colWidth) {
+            totalColWidth += i;
+        }
+        
+        for (UIElement element : children) {
+            int origoX = 
+            element.setOrigo();
+            element.setComponentSize();
+        }
+        
+        super.rescaleChildren();
     }
 }
 
@@ -87,7 +119,6 @@ class Text extends UIElement {
         super(origoX, origoY, componentWidth, componentHeight);
     }
     
-    
     @Override
     void display() {
         switch(textAlign) {
@@ -106,7 +137,6 @@ class Text extends UIElement {
         text(text, origoX, origoY, componentWidth, componentHeight);
     }
     
-    
     void setTextAlign(char align) {
         if (align == 'L' || align == 'C' ||  align == 'R') {
             textAlign = align; 
@@ -114,7 +144,6 @@ class Text extends UIElement {
             println("ERROR: Not supported align. Use 'L', 'C' og 'R'");
         }
     }
-    
     
     void setNewText(String newText) {
         text = newText;
