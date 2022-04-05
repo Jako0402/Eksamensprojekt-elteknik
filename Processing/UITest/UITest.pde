@@ -1,25 +1,48 @@
-Row row = new Row(0, 0, 0, 0);
+Column col1 = new Column(0,0,180,720);
 
 void setup() {
     surface.setResizable(true);
     size(1080, 720);
     textSize(40);
     
-    TestBox newTestBox = new TestBox(100, 100, 200, 250);
-    row.addChildToList(newTestBox);
+    TestBox newTestBox1 = new TestBox(0, 0, 0, 0);
+    TestBox newTestBox2 = new TestBox(0, 0, 0, 0);
+    TestBox newTestBox3 = new TestBox(0, 0, 0, 0);
+    TestBox newTestBox4 = new TestBox(0, 0, 0, 0);
+    TestBox newTestBox5 = new TestBox(0, 0, 0, 0);
+
+    Row row1 = new Row(0, 0, 1080, 720);
+    Row row2 = new Row(0, 0, 1080, 720);
     
+    row1.addChildToList(newTestBox1);
+    row1.addChildToList(newTestBox2);
+    row1.addChildToList(newTestBox3);
+    row2.addChildToList(newTestBox4);
+    row2.addChildToList(newTestBox5);
     
-    newTestBox.setTextAlign('L');
-    newTestBox.setNewText("Dette er en ny tekst");
+    newTestBox1.setNewText("Test1");
+    newTestBox2.setNewText("Test2");
+    newTestBox3.setNewText("Test3");
+    newTestBox4.setNewText("Test4");
+    newTestBox5.setNewText("Test5");
     
+    row1.colWidth[0] = 1;
+    row1.colWidth[1] = 2;
+    row1.colWidth[2] = 4;
+    
+    row2.colWidth[0] = 3;
+    row2.colWidth[1] = 2;
+    
+    col1.addChildToList(row1);
+    col1.addChildToList(row2);
 }
 
 void draw() {
     background(100); 
-    row.display();
+    col1.display();
     
-    int[] mouse = {mouseX, mouseY};
-    row.getChild(0).setOrigo(mouse);
+    col1.setComponentSize(width, height);
+    col1.rescaleChildren();
 }
 
 class UIElement {
@@ -34,6 +57,14 @@ class UIElement {
         children = new ArrayList<UIElement>();
     }
     
+    UIElement() {
+        origoX = 0;
+        origoY = 0;
+        componentWidth = 0;
+        componentHeight = 0;
+        children = new ArrayList<UIElement>();
+    }
+    
     void display() {
         for (UIElement element : children) {
             element.display();
@@ -44,16 +75,14 @@ class UIElement {
         children.add(elementToAdd);
     }
     
-    void setOrigo(int[] newOrigo) {
-        if (newOrigo.length != 2) println("ERROR: newOrigo must have 2 values");
-        origoX = newOrigo[0];
-        origoY = newOrigo[1];
+    void setOrigo(int newOrigoX, int newOrigoY) {
+        origoX = newOrigoX;
+        origoY = newOrigoY;
     }
     
-    void setComponentSize(int[] newSize) {
-        if (newSize.length != 2) println("ERROR: newSize must have 2 values");
-        componentWidth = newSize[0];
-        componentHeight = newSize[1];
+    void setComponentSize(int newComponentWidth, int newcCmponentWidth) {
+        componentWidth = newComponentWidth;
+        componentHeight = newcCmponentWidth;
     }
     
     UIElement getChild(int index) {
@@ -69,6 +98,14 @@ class UIElement {
             element.rescaleChildren();
         }
     }
+    
+    int getComponentWidth() {
+        return componentWidth;
+    }
+    
+    int getComponentHeight() {
+        return componentHeight;
+    }
 }
 
 
@@ -83,7 +120,7 @@ class Row extends UIElement {
     @Override
     void addChildToList(UIElement elementToAdd) {
         super.addChildToList(elementToAdd);
-        colWidth[children.size() - 1] = 1;     
+        this.colWidth[children.size() - 1] = 1;     
     }
     
     @Override
@@ -93,20 +130,53 @@ class Row extends UIElement {
             totalColWidth += i;
         }
         
-        for (UIElement element : children) {
-            int origoX = 
-            element.setOrigo();
-            element.setComponentSize();
+        int tempOrigoX = 0;
+        for (int i = 0; i < children.size(); i++) {
+            int newComponentWidth = int(float(colWidth[i]) / float(totalColWidth) * this.getComponentWidth());
+            int newComponentHeight = this.getComponentHeight();
+            this.getChild(i).setComponentSize(newComponentWidth, newComponentHeight);
+            
+            
+            this.getChild(i).setOrigo(tempOrigoX, origoY);
+            tempOrigoX += this.getChild(i).getComponentWidth();
         }
-        
         super.rescaleChildren();
     }
+    
 }
 
 
 class Column extends UIElement {
+    int[] rowWidth;
+    int totalRowWidth = 0;
     Column(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
+        rowWidth = new int[12]; //One Column cannot have more than 12 elements. Might need rework
+    }
+    
+    @Override
+    void addChildToList(UIElement elementToAdd) {
+        super.addChildToList(elementToAdd);
+        this.rowWidth[children.size() - 1] = 1;     
+    }
+    
+    @Override
+    void rescaleChildren() {
+        totalRowWidth = 0;
+        for (int i : rowWidth) {
+            totalRowWidth += i;
+        }
+        
+        int tempOrigoY = 0;
+        for (int i = 0; i < children.size(); i++) {
+            int newComponentWidth = this.getComponentWidth();
+            int newComponentHeight = int(float(rowWidth[i]) / float(totalRowWidth) * this.getComponentHeight());
+            this.getChild(i).setComponentSize(newComponentWidth, newComponentHeight);
+            
+            this.getChild(i).setOrigo(origoX, tempOrigoY);
+            tempOrigoY += this.getChild(i).getComponentHeight();
+        }
+        super.rescaleChildren();
     }
 }
 
