@@ -7,8 +7,6 @@ String text = "";
 boolean newData = false;
 int[] expectedDataLengthArray = {0, 2, 3, 0, 0, 0, 0, 0, 0, 0};
 
-byte[] byteArr = {63, 57, 33, -103};
-
 
 void setup() {
     size(1080, 720);
@@ -43,9 +41,8 @@ void serialEvent(Serial p) {
 void keyPressed() {
     if (key == ENTER) {
         
-        byteArr = text.getBytes();
         int nowCS = generateChecksum(text);
-        myPort.write(byteArr); 
+        myPort.write(text); 
         myPort.write(nowCS); 
 
         //myPort.write(text + generateChecksum(text)); 
