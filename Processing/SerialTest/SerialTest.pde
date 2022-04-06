@@ -2,10 +2,10 @@ import processing.serial.*;
 
 Serial myPort;  
 
-String inString;
+String inString = "Hest";
 String text = "";
 boolean newData = false;
-int[] expectedDataLengthArray = {0, 2, 3};
+int[] expectedDataLengthArray = {0, 2, 3, 0, 0, 0, 0, 0, 0, 0};
 
 void setup() {
     size(1080, 720);
@@ -18,8 +18,9 @@ void setup() {
 void draw() {
     background(100); 
     text(text, 10, 100);
-    text("buffer: " + inString + " as String", 10,50);
-    
+    if (inString.length() > 3) {
+      text("buffer: " + inString + " as String" + str(byte(inString.charAt(3))), 10,50);
+    }
     if (newData) {
         inString += myPort.readChar();
         newData = false;
@@ -35,13 +36,30 @@ void serialEvent(Serial p) {
 
 void keyPressed() {
     if (key == ENTER) {
-        myPort.write(text); 
+        myPort.write(text + generateChecksum(text)); 
+        println("Text:" + text);
+        println("CS:" + byte(generateChecksum(text)));
         text = "";
-    } else if (key == CODED){
-        
-    }else{
+    } else if (key == CODED) {
+        return;
+    } else if (key == BACKSPACE) {
+        if (text.length() < 1) return;
+        text = text.substring(0, text.length() - 1);
+     }else{
         text += key;
     }
+}
+
+
+char generateChecksum(String stringToParse) {
+    //https://forum.processing.org/beta/num_1274186375.html
+    byte currentdCS = 0;
+    for (char toAdd : stringToParse.toCharArray()) {
+        //println(toAdd);
+        currentdCS += int(toAdd);
+    }
+    println("CS to add to string: " + char(currentdCS) + " (as int: " + currentdCS + ")");
+    return char(currentdCS);
 }
 
 /* 
@@ -88,18 +106,18 @@ int checkData(String stringToCheck) {
     index++;
     if (stringToCheck.charAt(index) != '!') return 4;
     
-    String checkSumString = stringToCheck.substring(0, stringToCheck.length()-1);
+    String checkSumString = stringToCheck.substring(0, stringToCheck.length() - 1);
     byte expectedCS = 0;
     //https://forum.processing.org/beta/num_1274186375.html
     for (char toAdd : checkSumString.toCharArray()) {
         //println(toAdd);
         expectedCS += int(toAdd);
     }
-
-
+    
+    
     index++;
-    println("expectedCS: " + char(expectedCS) + " (as int: " + expectedCS + ")");
-    println("receivedCS: " + stringToCheck.charAt(index));
+    println("expectedCS: " + char(expectedCS) + " (as int: " + expectedCS + ") index: " + index);
+    println("receivedCS: " + stringToCheck.charAt(index) + " (as int: " + byte(stringToCheck.charAt(index)) + ")");
     if (stringToCheck.charAt(index) != expectedCS) return 5;
 
 

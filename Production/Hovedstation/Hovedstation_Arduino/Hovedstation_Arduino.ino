@@ -32,12 +32,12 @@ void loop() {
     if (radio.available()) {
         char text[32] = {0};
         radio.read(&text, sizeof(text));
-        Serial.print(text);
+        Serial.write(text);
     }
 
     if (Serial.available() > 0) {
         stringFromPC = Serial.readString();
-        Serial.print(stringFromPC);
+        Serial.write(stringFromPC);
         radio.stopListening();
         radio.write(&stringFromPC, sizeof(stringFromPC));
         radio.startListening();
