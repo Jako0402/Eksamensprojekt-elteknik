@@ -7,6 +7,9 @@ String text = "";
 boolean newData = false;
 int[] expectedDataLengthArray = {0, 2, 3, 0, 0, 0, 0, 0, 0, 0};
 
+byte[] byteArr = {63, 57, 33, -103};
+
+
 void setup() {
     size(1080, 720);
     printArray(Serial.list());
@@ -19,7 +22,10 @@ void draw() {
     background(100); 
     text(text, 10, 100);
     if (inString.length() > 3) {
-      text("buffer: " + inString + " as String" + str(byte(inString.charAt(3))), 10,50);
+        //text("buffer: " + inString + " as String" + str(byte(inString.charAt(3))), 10,50);
+        text("buffer: " + inString + " as String", 10, 50);
+    } else{
+        text("buffer: " + inString + " as String", 10, 50);
     }
     if (newData) {
         inString += myPort.readChar();
@@ -36,16 +42,22 @@ void serialEvent(Serial p) {
 
 void keyPressed() {
     if (key == ENTER) {
-        myPort.write(text + generateChecksum(text)); 
-        println("Text:" + text);
-        println("CS:" + byte(generateChecksum(text)));
+        
+        byteArr = text.getBytes();
+        int nowCS = generateChecksum(text);
+        myPort.write(byteArr); 
+        myPort.write(nowCS); 
+
+        //myPort.write(text + generateChecksum(text)); 
+        //println("Text:" + text);
+        //println("CS:" + byte(generateChecksum(text)));
         text = "";
     } else if (key == CODED) {
         return;
     } else if (key == BACKSPACE) {
         if (text.length() < 1) return;
         text = text.substring(0, text.length() - 1);
-     }else{
+    } else{
         text += key;
     }
 }
@@ -64,7 +76,7 @@ char generateChecksum(String stringToParse) {
 
 /* 
 0 = Valid package
-1 = Fist char is not ´?´ 
+1 = Fist char is not ´ ? ´ 
 2 = CommandID not number
 3 = ';' not found
 4 = '!' not found
@@ -118,13 +130,13 @@ int checkData(String stringToCheck) {
     index++;
     println("expectedCS: " + char(expectedCS) + " (as int: " + expectedCS + ") index: " + index);
     println("receivedCS: " + stringToCheck.charAt(index) + " (as int: " + byte(stringToCheck.charAt(index)) + ")");
-    if (stringToCheck.charAt(index) != expectedCS) return 5;
-
-
+    if (int(stringToCheck.charAt(index)) != int(expectedCS)) return 5;
+    
+    
     return 0;
 }
 
-//https://www.baeldung.com/java-check-string-number
+//https :/ /www.baeldung.com/java-check-string-number
 boolean isInt(String testStr) {
     if (testStr == null) {
         return false;
