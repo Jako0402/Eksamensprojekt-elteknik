@@ -127,7 +127,7 @@ int checkData(String stringToCheck) {
     index++;
     println("expectedCS: " + char(expectedCS) + " (as int: " + expectedCS + ") index: " + index);
     println("receivedCS: " + stringToCheck.charAt(index) + " (as int: " + byte(stringToCheck.charAt(index)) + ")");
-    if (int(stringToCheck.charAt(index)) != int(expectedCS)) return 5;
+    if (byte(stringToCheck.charAt(index)) != byte(expectedCS)) return 5;
     
     
     return 0;
