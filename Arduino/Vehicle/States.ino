@@ -9,11 +9,6 @@ void find_point() {
       last_touch = millis();
       Serial.print("Knap ");
       Serial.println(i + 1);
-      Serial.print("venstre ");
-      Serial.println(count_left_encoder);
-      Serial.print("Højre   ");
-      Serial.println(count_right_encoder);
-      Serial.println("");
       switch (state) {  //Skifter
         case 0:         //til
           state = 1;    //stadiet
@@ -24,7 +19,7 @@ void find_point() {
   if (digitalRead(18)) {
     switch (state) {  //Skifter
       case 0:         //til
-        state = 112;    //stadiet
+        state = 112;  //stadiet
         break;        //"stop"
     }
   }

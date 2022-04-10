@@ -28,9 +28,9 @@ void loop() {
       find_point();
       break;
     case 1:
-      point_found();
+      get_point();
       break;
-    case 2:
+    case 112:
       stop_();
       break;
   }
