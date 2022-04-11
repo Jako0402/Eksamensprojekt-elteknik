@@ -2,10 +2,28 @@
 #include "motor.h"
 #include "Definitions.h"
 
+
+//Begin Jakob indsat
+#include <SPI.h>
+#include "src/RF24/RF24.h"
+#include "src/RF24/nRF24L01.h"
+#include "src/RF24/printf.h"
+
+RF24 radio(7, 8);  // CE, CSN
+String toSend;
+const byte addresses[][6] = {"00001", "00002"};
+//End Jakob indsat
+
 long tid = 0;
 long tid2 = 0;
 
 void setup() {
+  //Begin Jakob indsat
+  radio.begin();
+  radio.openWritingPipe(addresses[0]);     // 00001
+  radio.openReadingPipe(1, addresses[1]);  // 00002
+  radio.startListening();
+  //End Jakob indsat
 
   delay(1000);
 
@@ -16,8 +34,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(interruptPin), left_encoder_trigger, CHANGE);      // Tæller encoderen for venstre hjul
   attachInterrupt(digitalPinToInterrupt(interruptPin2), right_encoder_trigger, CHANGE);    // Tæller encoderen for højre hjul
 
-  left_motor_speed = 70;
-  right_motor_speed = 60;
+  left_motor_speed = 0;
+  right_motor_speed = 0;
 
   left_motor.drive(left_motor_speed);
   right_motor.drive(right_motor_speed);
@@ -89,6 +107,8 @@ void loop() {
     Serial.println(vehicle_angle);
     Serial.println("");
 
+    sendTestPosition();
+
     tid2 = millis();
   }
 
@@ -130,3 +150,27 @@ void right_encoder_trigger () {
 }
 
 // https://components101.com/microcontrollers/arduino-uno
+
+
+//Begin Jakob indsat
+
+void sendTestPosition() {
+  toSend = "";
+  toSend += vehicle_X;
+  toSend += ";";
+  toSend += vehicle_Y;
+  toSend += ";";
+  toSend += vehicle_angle;
+  Serial.println(toSend);
+
+  char textToSend[32];
+  toSend.toCharArray(textToSend, 32);
+
+  radio.stopListening();
+  radio.write(&textToSend, sizeof(textToSend));
+  radio.startListening();
+}
+
+
+
+//End Jakob indsat
