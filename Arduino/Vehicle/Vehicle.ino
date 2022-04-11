@@ -34,8 +34,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(interruptPin), left_encoder_trigger, CHANGE);      // Tæller encoderen for venstre hjul
   attachInterrupt(digitalPinToInterrupt(interruptPin2), right_encoder_trigger, CHANGE);    // Tæller encoderen for højre hjul
 
-  left_motor_speed = 0;
-  right_motor_speed = 0;
+  left_motor_speed = 50;
+  right_motor_speed = 40;
 
   left_motor.drive(left_motor_speed);
   right_motor.drive(right_motor_speed);
@@ -92,6 +92,7 @@ void loop() {
   */
 
   if ((millis() - tid2) > 1000) {
+    /*
     Serial.print("Højre encoder: ");
     Serial.println(count_right_encoder);
     Serial.print("Venstre encoder: ");
@@ -106,7 +107,7 @@ void loop() {
     Serial.print("radianer: ");
     Serial.println(vehicle_angle);
     Serial.println("");
-
+*/
     sendTestPosition();
 
     tid2 = millis();
@@ -161,7 +162,8 @@ void sendTestPosition() {
   toSend += vehicle_Y;
   toSend += ";";
   toSend += vehicle_angle;
-  Serial.println(toSend);
+  toSend += "!";
+  Serial.print(toSend);
 
   char textToSend[32];
   toSend.toCharArray(textToSend, 32);
