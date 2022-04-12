@@ -16,6 +16,7 @@ const byte addresses[][6] = {"00001", "00002"};
 
 void setup() {
     Serial.begin(9600);
+    Serial.setTimeout(maxTimeSerial);
 
     radio.begin();
 
@@ -35,6 +36,7 @@ void loop() {
     }
 
     if (Serial.available() > 0) {
+        //Serial.println("available");
         stringFromPC = Serial.readString();
         Serial.print(stringFromPC);
 

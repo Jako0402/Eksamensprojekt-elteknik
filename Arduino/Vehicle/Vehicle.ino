@@ -53,6 +53,7 @@ void setup() {
 }
 
 void loop() {
+  testRadio();
 
   /*
     Serial.println("");
@@ -156,13 +157,15 @@ void right_encoder_trigger () {
 //Begin Jakob indsat
 
 void sendTestPosition() {
-  toSend = "";
-  toSend += vehicle_X;
+  toSend = "?0;";
+  toSend += int(vehicle_X);
   toSend += ";";
-  toSend += vehicle_Y;
+  toSend += int(vehicle_Y);
   toSend += ";";
-  toSend += vehicle_angle;
+  toSend += int(vehicle_angle);
+  toSend += ";-1";
   toSend += "!";
+  toSend += char(generateCS(toSend));
   Serial.print(toSend);
 
   char textToSend[32];
@@ -173,6 +176,26 @@ void sendTestPosition() {
   radio.startListening();
 }
 
+
+byte generateCS(String inputStr) {
+    byte currentCS = 0;
+    for (int i = 0; i < inputStr.length(); i++) {
+        currentCS += int(inputStr[i]);
+    }
+    return currentCS;
+}
+
+
+void testRadio() {
+  if (radio.available()) {
+    char text[32] = {0};
+    radio.read(&text, sizeof(text));
+    Serial.println(text);
+    digitalWrite(4, HIGH);
+    delay(200);
+    digitalWrite(4, LOW);
+  }
+}
 
 
 //End Jakob indsat
