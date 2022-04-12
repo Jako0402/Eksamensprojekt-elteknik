@@ -26,14 +26,14 @@ void setup() {
     radio.openWritingPipe(addresses[0]);     // 00001
     radio.openReadingPipe(1, addresses[1]);  // 00002
 
-    radio.stopListening();
+    radio.startListening();
 }
 
 void loop() {
     if (radio.available()) {
         char text[32] = {0};
         radio.read(&text, sizeof(text));
-        //Serial.print(text);
+        Serial.print(text);
         digitalWrite(4, HIGH);
         checkData(String(text));
     }
@@ -66,7 +66,7 @@ int checkData(String dataToCheck) {
     byte expectedCS = 0;
     for (int i = 0; i < dataToCheck.length()-1; i++) {
         expectedCS += int(dataToCheck[i]);
-        Serial.println(dataToCheck[i]);
+        //Serial.println(dataToCheck[i]);
     }
     byte receivedCS = dataToCheck[dataToCheck.length()-1];
 
