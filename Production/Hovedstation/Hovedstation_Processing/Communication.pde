@@ -1,7 +1,11 @@
 class ComDevice {
     Serial comPort;
     String lastPortRead;
-    int[] expectedDataLengthArray = {4, 2, 0};
+    int[] expectedDataLengthArray = {4, 2, 0}; //Response from vehicle
+    int[] responseBuffer;
+    int maxTimeout = 1000; //ms
+    int commandSendTime; //millis()-reading at Serial.write()
+    int responseStatus = 0;
     boolean newData = false;
     
     ComDevice(Serial comPort) {
@@ -10,28 +14,75 @@ class ComDevice {
     }
     
     
-    void update() {
-        //Is called every frame from void draw()
+    public void update() {
+        //Called every frame from void draw()
         
-        if (newData) {
-            lastPortRead += comPort.readChar();
-            newData = false;
-            comPort.clear();
-            println("validateData: " + validateData(lastPortRead));
-            println("lastPortRead: " + lastPortRead);
+        //Checks for timeout and incomming response
+        if (responseStatus == 1) { //Waiting for response
+            if ((millis() - commandSendTime) > maxTimeout) { //Check timeout
+                println("Timeout");
+                responseStatus = 4; //Timeout
+            } else {
+                if (checkForEndCS()) responseStatus = 2; //If '!' is read, read CS (next char)
+            }
         }
+
+        //Parse response
+        if (responseStatus == 2) { 
+            println("lastPortRead: " + lastPortRead);
+            if (validateData(lastPortRead) != 0) responseStatus = 5; //Check package integrity
+            responseBuffer = splitDataToArray(lastPortRead);
+            responseStatus = 3;
+        }    
+    }
+    
+    
+    public void serialEvent() {
+        //Called from void serialEvent()
+        if (responseStatus == 1) {
+            lastPortRead = comPort.readString();
+            newData = true;
+            //println("lastPortRead: " + lastPortRead);
+        }else{
+            comPort.clear(); //Clear buffer if not waiting
+        }
+    }
+    
+    
+    public boolean sendCommand(int id, int[] contet) {
+        //Checks and sends a command to Arduino
+        if (!checkParameterLength(id, contet)) return false; //Wrong parameter length
         
+        String commandToSend = generateCommand(id, contet);
+        int checksumToSend = int(sumByteFromString(commandToSend));
+        
+        if (!pushDataToSerial(commandToSend, checksumToSend)) return false; //Error sending (not implemented yew)
+        
+        return true;
     }
     
     
-    void serialEvent() {
-        lastPortRead = comPort.readString();
-        newData = true;
-        //println("lastPortRead: " + lastPortRead);
+    public int getReponseStatus() {
+        //0 = Not expecting a response from vehicle
+        //1 = Waiting for response
+        //2 = Wait - Parsing response
+        //3 = Reponse ready to read
+        //4 = Error: Timeout
+        //5 = Error: Bad read
+        //6 = 
+        return responseStatus;
+    }
+
+
+    public int[] getReponseData() {
+        if (responseStatus != 3) println("Warning: getReponseData returning bad data");
+        return responseBuffer;
     }
     
     
-    int validateData(String dataToValidate) {
+    //Methods below this line are NOT supposed to be invoked from outside class//
+    //-------------------------------------------------------------------------//
+    private int validateData(String dataToValidate) {
         //0 = Valid package
         //1 = Wrong checksum
         //2 = Fist char is not ´?´ 
@@ -83,7 +134,7 @@ class ComDevice {
     }
     
     
-    boolean validateChecksum(String dataToValidate) {
+    private boolean validateChecksum(String dataToValidate) {
         //Takes the last character of a string and compares it to the rest of the string (summed as bytes na comverted to char). 
         //true = matching checksum
         String checksumString = dataToValidate.substring(0, dataToValidate.length() - 1);
@@ -101,7 +152,7 @@ class ComDevice {
     }
     
     
-    byte sumByteFromString(String stringToSum) {
+    private byte sumByteFromString(String stringToSum) {
         //Takes a string and ruturns the byte corresponding to the sum of bytes
         byte totalSum = 0;
         for (char toAdd : stringToSum.toCharArray()) {
@@ -112,7 +163,7 @@ class ComDevice {
     }
     
     
-    boolean isInt(String testStr) {
+    private boolean isInt(String testStr) {
         //Takes a string and returns true if it is a number
         if (testStr == null) { //Empty string
             return false;
@@ -128,8 +179,8 @@ class ComDevice {
     }
     
     
-    boolean sendCommand(int id, int[] contet) {
-        //Sends a command to vehicle. Returns true if correct parameters is met
+    private boolean checkParameterLength(int id, int[] contet) {
+        //Checks parameter-id length match. Returns true if correct parameters is met
         
         //Checks for correct number of parameters
         switch(id) {
@@ -148,22 +199,53 @@ class ComDevice {
             default:
             return false;
         }
-        
-        //Add ending to command
-        String commandToSend = "?" + str(id) + ";";
+        return true;    
+    }
+    
+    
+    private String generateCommand(int id, int[] contet) {
+        //Generetes and returnscommand (no checksum)
+        String commandToSend = "?" + str(id) + ";"; //Add start to command
         for (int i : contet) {
             commandToSend += str(i);
             commandToSend += ';';
         }
         commandToSend = commandToSend.substring(0, commandToSend.length() - 1); //remove last ';'
-        commandToSend += "!";
+        commandToSend += "!"; //Add ending to command
         
-        int newChecksum = int(sumByteFromString(commandToSend));
+        
         //println("commandToSend: " + commandToSend);
         //println("newChecksum: " + newChecksum);
-
+        return commandToSend;
+    }
+    
+    
+    private boolean pushDataToSerial(String commandToSend, int checksumToSend) {
+        //Sends data to serial device. Might add check here later
         comPort.write(commandToSend);
-        comPort.write(newChecksum);
+        comPort.write(checksumToSend);
+        commandSendTime = millis(); //Start timeout timer
+        responseStatus = 1; //We are now waiting for respons
         return true;
+    }
+    
+    
+    private int[] splitDataToArray(String fullPackage) {
+        //Takes the full package and splits to array of integers
+        String trimmedPackage = fullPackage.substring(1, fullPackage.length() - 2); //Removes begin, end, and checksum
+        int[] splitData = int(split(trimmedPackage, ';'));
+        return splitData;
+    }
+    
+    
+    private boolean checkForEndCS() {
+        //Reads one char (CS) from Serial and appends it to 'lastPortRead'. Returns true if CS read
+        if (newData) {
+            lastPortRead += comPort.readChar();
+            newData = false;
+            comPort.clear();
+            return true;
+        }
+        return false;
     }
 }

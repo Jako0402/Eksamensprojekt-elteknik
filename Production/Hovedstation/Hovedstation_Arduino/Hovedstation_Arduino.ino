@@ -36,9 +36,8 @@ void loop() {
     }
 
     if (Serial.available() > 0) {
-        //Serial.println("available");
         stringFromPC = Serial.readString();
-        Serial.print(stringFromPC);
+        //Serial.print(stringFromPC); //Debug: Sends a copy of data back to PC
 
         char textToSend[32];
         stringFromPC.toCharArray(textToSend, 32);
