@@ -16,6 +16,7 @@ class ComDevice {
     
     public void update() {
         //Called every frame from void draw()
+        //print(responseStatus + " ");
         
         //Checks for timeout and incomming response
         if (responseStatus == 1) { //Waiting for response
@@ -26,12 +27,24 @@ class ComDevice {
                 if (checkForEndCS()) responseStatus = 2; //If '!' is read, read CS (next char)
             }
         }
-
+        
         //Parse response
         if (responseStatus == 2) { 
-            println("lastPortRead: " + lastPortRead);
-            if (validateData(lastPortRead) != 0) responseStatus = 5; //Check package integrity
+            println("Response: " + lastPortRead);
+            
+            if (validateData(lastPortRead) != 0) {  //Check package integrity
+                println("Error: Bad read");
+                responseStatus = 5;
+                return;
+            } 
+            
             responseBuffer = splitDataToArray(lastPortRead);
+            if (!checkResponseMatch(responseBuffer)) { //(not implementet yew)
+                println("Mismatch between command and repsonse");
+                responseStatus = 6;
+                return;
+            }
+
             responseStatus = 3;
         }    
     }
@@ -43,7 +56,7 @@ class ComDevice {
             lastPortRead = comPort.readString();
             newData = true;
             //println("lastPortRead: " + lastPortRead);
-        }else{
+        } else {
             comPort.clear(); //Clear buffer if not waiting
         }
     }
@@ -68,12 +81,12 @@ class ComDevice {
         //2 = Wait - Parsing response
         //3 = Reponse ready to read
         //4 = Error: Timeout
-        //5 = Error: Bad read
-        //6 = 
+        //5 = Error: Bad read / package
+        //6 = Eroor: Mismatch between command and repsonse (not implementet yew)
         return responseStatus;
     }
-
-
+    
+    
     public int[] getReponseData() {
         if (responseStatus != 3) println("Warning: getReponseData returning bad data");
         return responseBuffer;
@@ -247,5 +260,11 @@ class ComDevice {
             return true;
         }
         return false;
+    }
+
+
+    private boolean checkResponseMatch(int[] receivedResponse) {
+        //Check is the resonse matches the command send (not implementet yew)
+        return true;
     }
 }

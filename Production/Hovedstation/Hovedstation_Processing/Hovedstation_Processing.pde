@@ -4,12 +4,16 @@ Elever:     Søren Madsen og Jakob Kristensen
 Afleveret:  22/04/2022
 Vejleder:   Bent Arnoldsen
 Skole:      Uddannelsescenter Holstebro - HTX
+
+OBS: Programmet er udviklet og testet på Processing 4.0 beta 7
+Link: https://github.com/processing/processing4/releases/ 
 */
 import processing.serial.*;
 
 View screen = new View(0,0,1080,720);
 ComDevice arduino = new ComDevice(new Serial(this, Serial.list()[0], 9600)); //Crashes with no Ardunio. Needs rework
 
+Storage testS = new Storage();
 
 void setup() {
     surface.setResizable(true);
@@ -17,16 +21,20 @@ void setup() {
     setupButtons();
     size(1080, 720);
     textSize(40);
+
     
     screen.addChildrenToList(new UIElement[] {
         new Row().addChildrenToList(new UIElement[] {
             new Column().addChildrenToList(new UIElement[] {
                 new TestBox(0,0,0,0),
-                    TestButton,
+                    TestButton0,
+                    TestButton1,
                 })
             })
         });
     
+
+    testS.addDataPointToStorage(new DataPoint(15, 73, 130, false));
 }
 
 
@@ -42,6 +50,7 @@ void draw() {
 
 
 void serialEvent(Serial $) {
+    println("void serialEvent");
     arduino.serialEvent();
 }
 
@@ -69,5 +78,15 @@ void mouseReleased() {
 
 
 void handleButton(int pressedButtonID) {
-    print(arduino.sendCommand(1, new int[]{100, 200}));
+    switch (pressedButtonID) {
+        case 0:
+            print(arduino.sendCommand(1, new int[]{100, 200}));
+            break;
+        
+        case 1:
+            print(arduino.sendCommand(2, new int[]{}));
+            break;
+    }
+
+
 }

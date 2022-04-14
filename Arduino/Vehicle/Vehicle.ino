@@ -13,8 +13,10 @@ RF24 radio(7, 8);  // CE, CSN
 const byte addresses[][6] = {"00001", "00002"};
 String toSend;
 String lastRecived;
+int commandArr[5];
+int arrLenth;
+int contactStatus = -1;
 bool newDataToParse = false;
-
 // End Jakob indsat
 
 long tid = 0;
@@ -45,15 +47,17 @@ void setup() {
     left_motor.drive(left_motor_speed);
     right_motor.drive(right_motor_speed);
 
-    Serial.println(wheel_diameter, 4);
-    Serial.println(wheel_circumference, 4);
-    Serial.println(encoder_measurements);
-    Serial.println(measurement_length, 4);
-    Serial.println(rotation_diameter);
-    Serial.println(rotation_circumference, 4);
-    Serial.println(measurement_rotation, 4);
-    Serial.println(measurement_forward, 4);
-    Serial.println(measurement_sideways, 4);
+    /*
+        Serial.println(wheel_diameter, 4);
+        Serial.println(wheel_circumference, 4);
+        Serial.println(encoder_measurements);
+        Serial.println(measurement_length, 4);
+        Serial.println(rotation_diameter);
+        Serial.println(rotation_circumference, 4);
+        Serial.println(measurement_rotation, 4);
+        Serial.println(measurement_forward, 4);
+        Serial.println(measurement_sideways, 4);
+        */
 }
 
 void loop() {
@@ -156,24 +160,35 @@ void right_encoder_trigger() {
 // Begin Jakob indsat
 
 void sendTestPosition() {
+    // Sends data (respons nr. 0)
     toSend = "?0;";
     toSend += int(vehicle_X);
     toSend += ";";
     toSend += int(vehicle_Y);
     toSend += ";";
     toSend += int(vehicle_angle);
-    toSend += ";-1";
+    toSend += ";";
+    toSend += contactStatus;
     toSend += "!";
     toSend += char(generateCS(toSend));
-    Serial.print(toSend);
+    //Serial.print(toSend);
 
+    pushStuff();
+    
+}
+
+
+void pushStuff() {
+    delay(100);
     char textToSend[32];
     toSend.toCharArray(textToSend, 32);
 
     radio.stopListening();
     radio.write(&textToSend, sizeof(textToSend));
     radio.startListening();
+    Serial.println(textToSend);
 }
+
 
 byte generateCS(String inputStr) {
     byte currentCS = 0;
@@ -189,7 +204,7 @@ void testRadio() {
         char text[32] = {0};
         radio.read(&text, sizeof(text));
         Serial.println(text);
-        digitalWrite(4, HIGH);
+        status_led.on();
         lastRecived = String(text);
         newDataToParse = true;
     }
@@ -197,16 +212,93 @@ void testRadio() {
     if (newDataToParse) {
         if (checkData(lastRecived) != 0) {
             Serial.println(checkData(lastRecived));
-            digitalWrite(4, LOW);
+            status_led.off();
             newDataToParse = false;
-            left_motor_speed = 0;
-            right_motor_speed = 0;
+
         } else {
             // Good package
-            left_motor_speed = 90;
-            right_motor_speed = 80;
+            splitGoodPackage();
+            handleCommand();
+            newDataToParse = false;
         }
     }
+}
+
+bool handleCommand() {
+    int commandID = commandArr[0];
+    switch (commandID) {
+        case 0:
+            Serial.println("Command 0");
+            if (arrLenth != 0 + 1) return false;
+            sendTestPosition();
+            break;
+
+        case 1:
+            Serial.println("Command 1");
+            if (arrLenth != 2 + 1) return false;
+            setNewTarget(commandArr[1], commandArr[2]);
+            break;
+
+        case 2:
+            Serial.println("Command 2");
+            if (arrLenth != 0 + 1) return false;
+            stopDriving();
+            break;
+
+        default:
+            Serial.println("Wrong command ID");
+            break;
+    }
+}
+
+void stopDriving() {
+    left_motor_speed = 0;
+    right_motor_speed = 0;
+
+    toSend = "?2!";
+    toSend += char(generateCS(toSend));
+    pushStuff();
+}
+
+void setNewTarget(int targetX, int targetY) {
+    Serial.print("New target: ");
+    Serial.print(targetX);
+    Serial.print(" and ");
+    Serial.println(targetY);
+    left_motor_speed = 80;
+    right_motor_speed = 70;
+
+
+    toSend = "?1;";
+    toSend += targetX;
+    toSend += ";";
+    toSend += targetY;
+    toSend += "!";
+    toSend += char(generateCS(toSend));
+    pushStuff();
+}
+
+// https://stackoverflow.com/questions/9072320/split-string-into-string-array
+void splitGoodPackage() {
+    String trimmedPackage = lastRecived.substring(1, lastRecived.length() - 2); //?2!? --> 2
+    trimmedPackage += ';';
+    // Serial.println(trimmedPackage);
+
+    // Split command at ';'
+    // int commandArr[5];
+    
+    int begin = 0;
+    int index = 0;
+    //arrLenth = 0; 
+
+    for (int i = 0; i < trimmedPackage.length(); i++) {
+        if (trimmedPackage[i] == ';') {
+            commandArr[index] = trimmedPackage.substring(begin, i).toInt();
+            begin = (1 + i);
+            index++;
+        }
+    }
+    arrLenth = index;
 }
 
 int checkData(String dataToCheck) {
@@ -261,17 +353,18 @@ int checkData(String dataToCheck) {
     index++;
     if (dataToCheck[index] != '!') return 6;  // End character must be '!'
 
-    Serial.println(dataToCheck);
-    Serial.print("expectedCS: ");
-    Serial.println(char(expectedCS));
-    Serial.print("  int: ");
-    Serial.println(expectedCS);
+    /*
+        Serial.println(dataToCheck);
+        Serial.print("expectedCS: ");
+        Serial.println(char(expectedCS));
+        Serial.print("  int: ");
+        Serial.println(expectedCS);
 
-    Serial.print("receivedCS: ");
-    Serial.println(char(receivedCS));
-    Serial.print("  int: ");
-    Serial.println(receivedCS);
-
+        Serial.print("receivedCS: ");
+        Serial.println(char(receivedCS));
+        Serial.print("  int: ");
+        Serial.println(receivedCS);
+    */
     return 0;
 }
 

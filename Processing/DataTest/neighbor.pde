@@ -2,10 +2,10 @@ import java.util.*;
 import java.util.stream.*;
 
 String[] findNeighbors(String centerKey, int radius) {
+    
     String[] foundNeighbors = {centerKey};
-    
-    
     //TODO: This is very bad. Fix to linear search
+    
     for (int rIndex = 0; rIndex < radius; rIndex++) {
         
         for (String currentKey : foundNeighbors) {
@@ -30,5 +30,7 @@ String[] findNeighbors(String centerKey, int radius) {
     String[] foundNeighborsNoDup = Arrays.stream(foundNeighbors).distinct().toArray(String[]::new);
 
     return foundNeighborsNoDup;
+    
+
 }
 

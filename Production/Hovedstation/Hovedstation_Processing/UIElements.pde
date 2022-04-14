@@ -21,14 +21,14 @@ class UIElement {
     }
     
     
-    void display() {
+    public void display() {
         for (UIElement element : children) {
             element.display();
         }
     }
     
     
-    UIElement addChildrenToList(UIElement[] elementsToAdd) {
+    public UIElement addChildrenToList(UIElement[] elementsToAdd) {
         for (UIElement childToAdd : elementsToAdd) {
             children.add(childToAdd);
         }
@@ -36,19 +36,19 @@ class UIElement {
     }
     
     
-    void setOrigo(int newOrigoX, int newOrigoY) {
+    public void setOrigo(int newOrigoX, int newOrigoY) {
         origoX = newOrigoX;
         origoY = newOrigoY;
     }
     
     
-    void setComponentSize(int newComponentWidth, int newcCmponentWidth) {
+    public void setComponentSize(int newComponentWidth, int newcCmponentWidth) {
         componentWidth = newComponentWidth;
         componentHeight = newcCmponentWidth;
     }
     
     
-    UIElement getChild(int index) {
+    public UIElement getChild(int index) {
         if (index >= children.size()) {
             println("ERROR: getChild is out of index");
             return new UIElement(0, 0, 0, 0);
@@ -57,19 +57,19 @@ class UIElement {
     }
     
     
-    void rescaleChildren() {
+    public void rescaleChildren() {
         for (UIElement element : children) {
             element.rescaleChildren();
         }
     }
     
     
-    int getComponentWidth() {
+    public int getComponentWidth() {
         return componentWidth;
     }
     
     
-    int getComponentHeight() {
+    public int getComponentHeight() {
         return componentHeight;
     }
 }
@@ -82,7 +82,7 @@ class View extends UIElement {
     
     
     @Override
-    void rescaleChildren() {
+    public void rescaleChildren() {
         UIElement child = this.getChild(0);
         child.setComponentSize(this.componentWidth, this.componentHeight);
         child.setOrigo(this.origoX, this.origoY);
@@ -109,7 +109,7 @@ class Axis extends UIElement {
     
     
     @Override
-    UIElement addChildrenToList(UIElement[] elementsToAdd) {
+    public UIElement addChildrenToList(UIElement[] elementsToAdd) {
         super.addChildrenToList(elementsToAdd);
         for (int i = 0; i < children.size(); i++) {
             this.axisLengths[i] = 1;     
@@ -118,18 +118,18 @@ class Axis extends UIElement {
     }
     
     
-    int getTotalAxisLength() {
+    @Override
+    public void rescaleChildren() {
+        super.rescaleChildren();
+    }
+
+
+    public int getTotalAxisLength() {
         int tempLength = 0;
         for (int i : axisLengths) {
             tempLength += i;
         }
         return tempLength;
-    }
-    
-    
-    @Override
-    void rescaleChildren() {
-        super.rescaleChildren();
     }
 }
 
@@ -146,7 +146,7 @@ class Row extends Axis {
     
     
     @Override
-    void rescaleChildren() {
+    public void rescaleChildren() {
         totalAxisLength = getTotalAxisLength();
         
         int tempOrigoX = 0;
@@ -176,7 +176,7 @@ class Column extends Axis {
     
     
     @Override
-    void rescaleChildren() {
+    public void rescaleChildren() {
         totalAxisLength = getTotalAxisLength();
         
         int tempOrigoY = 0;
@@ -209,7 +209,7 @@ class Text extends UIElement {
     
     
     @Override
-    void display() {
+    public void display() {
         switch(textAlign) {
             case 'L':
                 textAlign(LEFT);
@@ -227,7 +227,7 @@ class Text extends UIElement {
     }
     
     
-    void setTextAlign(char align) {
+    public void setTextAlign(char align) {
         if (align == 'L' || align == 'C' ||  align == 'R') {
             textAlign = align; 
         } else{
@@ -236,7 +236,7 @@ class Text extends UIElement {
     }
     
     
-    void setNewText(String newText) {
+    public void setNewText(String newText) {
         text = newText;
     }
 }
@@ -318,7 +318,7 @@ class TestBox extends Text {
     
     
     @Override
-    void display() {
+    public void display() {
         fill(150);
         rect(origoX, origoY, componentWidth, componentHeight);
         super.display();

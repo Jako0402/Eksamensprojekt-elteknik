@@ -8,12 +8,15 @@ HashMap<String, Integer> Colors = new HashMap<String, Integer>() {{
 //List with all buttons
 ArrayList<Button> ButtonList = new ArrayList<Button>();
 
-//Testbutton used to test varius functions
-Button TestButton = new Button(0);
+//Testbuttons used to test varius functions
+Button TestButton0 = new Button(0);
+Button TestButton1 = new Button(1);
 
 //Add all buttons to a single list and config
 void setupButtons() {
-    TestButton.setNewText("Start");
-    ButtonList.add(TestButton);
+    TestButton0.setNewText("Start");
+    TestButton1.setNewText("Stop");
+    ButtonList.add(TestButton0);
+    ButtonList.add(TestButton1);
 }
 
