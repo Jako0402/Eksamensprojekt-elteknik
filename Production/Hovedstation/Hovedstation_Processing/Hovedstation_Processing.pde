@@ -22,22 +22,26 @@ void setup() {
     size(1080, 720);
     textSize(40);
 
-    
-    screen.addChildrenToList(new UIElement[] {
-        new Row().addChildrenToList(new UIElement[] {
-            new Column().addChildrenToList(new UIElement[] {
-                new TestBox(0,0,0,0),
-                    TestButton0,
-                    TestButton1,
-                })
-            })
-        });
-
 
     Storage sto = new Storage();
     WallFollowAlgorithm alg = new WallFollowAlgorithm();
     VehicleController vc = new VehicleController(alg, sto, arduino);
     vc.generateNewTarget();
+
+
+
+    screen.addChildrenToList(new UIElement[] {
+        new Row().addChildrenToList(new UIElement[] {
+            new Column().addChildrenToList(new UIElement[] {
+                    TestButton0,
+                    TestButton1,
+                }),
+                
+            new Dataviewer(sto),
+            }),
+        });
+
+
 
 }
 

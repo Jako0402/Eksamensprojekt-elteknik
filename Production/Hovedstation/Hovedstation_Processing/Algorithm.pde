@@ -52,7 +52,7 @@ class Storage {
         int xKey = dp.getXpos() / cellResolution;
         int yKey = dp.getYpos() / cellResolution;
         String key = str(xKey) + "," + str(yKey); //Key is "cell x-number","cell y-number"
-        ArrayList dataPointList = dataPointListMap.get(key); 
+        ArrayList dataPointList = getDataPointArrayList(key); 
         
         if (dataPointList == null) {
             //println("Point placed in empty cell");
