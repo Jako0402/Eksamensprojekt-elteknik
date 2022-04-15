@@ -36,6 +36,7 @@ class Storage {
     HashMap<String, ArrayList<DataPoint>> dataPointListMap;
     DataPoint lastDataPoint;
     DataPoint lastObstacle;
+    int[] currentTarget = {0, 0};
     int cellResolution = 10; //Size of Hashmap key resolution
     
     Storage() {
@@ -106,6 +107,16 @@ class Storage {
     
     public DataPoint getLastObstacle() {
         return lastObstacle;
+    }
+
+
+    public void setCurrentTarget(int[] currentTarget) {
+        this.currentTarget = currentTarget;
+    }
+
+
+    public int[] getCurrentTarget() {
+        return currentTarget;
     }
     
     
@@ -219,7 +230,8 @@ class VehicleController {
     public int[] generateNewTarget() {
         ArrayList<dataRequest> requiredData = algorithm.requestData();
         requiredData = fulfillDataRequest(requiredData);
-        algorithm.calculateTarget(requiredData);
+        int[] target = algorithm.calculateTarget(requiredData);
+        storage.setCurrentTarget(target);
         return new int[1];
     }
     

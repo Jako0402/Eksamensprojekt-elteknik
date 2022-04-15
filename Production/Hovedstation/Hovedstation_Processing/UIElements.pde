@@ -242,7 +242,7 @@ class Text extends UIElement {
 }
 
 
-class Button extends Text {
+class Button extends Text implements MouseHover{
     boolean isClicked = false;
     boolean mouseHover = false;
     int buttonID;
@@ -260,7 +260,7 @@ class Button extends Text {
     
     @Override
     public void display() {
-        mouseHover = checkMouseHover();
+        mouseHover = MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY);
         
         if (mouseHover) {
             fill(Colors.get("key2"));
@@ -297,16 +297,6 @@ class Button extends Text {
 
     public int getButtonID() {
         return buttonID;
-    }
-
-    
-    private boolean checkMouseHover() {
-        if (mouseX >= origoX && mouseX <= origoX + componentWidth && 
-            mouseY >= origoY && mouseY <= origoY + componentHeight) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }
 

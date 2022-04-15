@@ -1,4 +1,4 @@
-class Dataviewer extends UIElement {
+class Dataviewer extends UIElement implements MouseHover {
     Storage storage;
     int[] viewX = { - 100, 100};
     int[] viewY = { - 100, 100};
@@ -23,7 +23,10 @@ class Dataviewer extends UIElement {
     public void display() {
         fill(150);
         rect(origoX, origoY, componentWidth, componentHeight);
-        calculateKeyList(viewX, viewY, cellResolution);
+        //String[] keys = calculateKeyList(viewX, viewY, cellResolution);
+        //getPointListList(keys);
+        
+        println(MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY));
     }
     
     
@@ -75,5 +78,16 @@ class Dataviewer extends UIElement {
         return foundKeys;
     }
 
-    
+
+    private ArrayList<ArrayList<DataPoint>> getPointListList(String[] keyList) {
+        //Talkes a array of string keys and returns corresponding ArrayList<DataPoint> in a new wrapper ArrayList
+        ArrayList<ArrayList<DataPoint>> dataPointListList = new ArrayList<ArrayList<DataPoint>>();
+
+        for (String key : keyList) {
+            ArrayList<DataPoint> dataPointArrayList = storage.getDataPointArrayList(key);
+            if (dataPointArrayList != null) dataPointListList.add(dataPointArrayList); //null = no points in cell
+        }
+        //println(dataPointListList.size());
+        return dataPointListList;
+    }
 }
