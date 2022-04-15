@@ -124,7 +124,7 @@ class Axis extends UIElement {
     }
 
 
-    public int getTotalAxisLength() {
+    protected int getTotalAxisLength() {
         int tempLength = 0;
         for (int i : axisLengths) {
             tempLength += i;

@@ -13,7 +13,7 @@ import processing.serial.*;
 View screen = new View(0,0,1080,720);
 ComDevice arduino = new ComDevice(new Serial(this, Serial.list()[0], 9600)); //Crashes with no Ardunio. Needs rework
 
-Storage testS = new Storage();
+
 
 void setup() {
     surface.setResizable(true);
@@ -32,9 +32,13 @@ void setup() {
                 })
             })
         });
-    
 
-    testS.addDataPointToStorage(new DataPoint(15, 73, 130, false));
+
+    Storage sto = new Storage();
+    WallFollowAlgorithm alg = new WallFollowAlgorithm();
+    VehicleController vc = new VehicleController(alg, sto, arduino);
+    vc.generateNewTarget();
+
 }
 
 
