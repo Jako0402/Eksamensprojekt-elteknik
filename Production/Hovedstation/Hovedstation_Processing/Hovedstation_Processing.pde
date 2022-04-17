@@ -15,33 +15,35 @@ ComDevice arduino = new ComDevice(new Serial(this, Serial.list()[0], 9600)); //C
 
 
 
+Storage sto = new Storage();
+WallFollowAlgorithm alg = new WallFollowAlgorithm();
+VehicleController vc = new VehicleController(alg, sto, arduino);
+Dataviewer dv = new Dataviewer(sto);
+
+
+
 void setup() {
     surface.setResizable(true);
     surface.setTitle("Eksamen i El-teknik 2022 - Søren og Jakob");
     setupButtons();
     size(1080, 720);
     textSize(40);
-
-
-    Storage sto = new Storage();
-    WallFollowAlgorithm alg = new WallFollowAlgorithm();
-    VehicleController vc = new VehicleController(alg, sto, arduino);
+    
     vc.generateNewTarget();
-
-
-
+    sto.addDataPointToStorage(new DataPoint(-50, 50, 0, false));
+    
     screen.addChildrenToList(new UIElement[] {
         new Row().addChildrenToList(new UIElement[] {
             new Column().addChildrenToList(new UIElement[] {
-                    TestButton0,
-                    TestButton1,
-                }),
-                
-            new Dataviewer(sto),
+                TestButton0,
+                TestButton1,
             }),
-        });
-
-
+            
+            dv,
+        }),
+    });
+    
+    
 }
 
 
@@ -68,32 +70,55 @@ void keyPressed() {
 
 
 void mousePressed() {
-    for (Button button : ButtonList) {
-        if (button.getButtonHover()) button.setIsClicked(true);
+    if (mouseButton == LEFT) {
+        for (Button button : ButtonList) {
+            if (button.getButtonHover()) {
+                button.setIsClicked(true);
+                break;
+            }
+        }
+        
+        dv.mousePressed();
+        
+    }else if (mouseButton ==  CENTER) {
+        dv.mouseCenter();
     }
 }
 
 
 void mouseReleased() {
-    for (Button button : ButtonList) {
-        if (button.getButtonHover()) {
-            button.setIsClicked(false);
-            handleButton(button.getButtonID());
+    if (mouseButton == LEFT) {
+        for (Button button : ButtonList) {
+            if (button.getButtonHover() && button.getButtonStatus()) {
+                button.setIsClicked(false);
+                handleButton(button.getButtonID());
+                break;
+            }
         }
+        
+        dv.mouseReleased();
+    }
+}
+
+
+void mouseDragged() {
+    if (mouseButton == LEFT) {
+        //print("Dragged");
+        dv.mouseDragged();
     }
 }
 
 
 void handleButton(int pressedButtonID) {
-    switch (pressedButtonID) {
+    switch(pressedButtonID) {
         case 0:
             print(arduino.sendCommand(1, new int[]{100, 200}));
-            break;
+        break;
         
         case 1:
             print(arduino.sendCommand(2, new int[]{}));
-            break;
+        break;
     }
-
-
+    
+    
 }
