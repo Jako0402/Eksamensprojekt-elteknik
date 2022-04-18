@@ -14,6 +14,8 @@ HashMap<String, Integer> Requests = new HashMap<String, Integer>() {{
     put("lastObstacleAngle", 3);
 }};
 
+
+//Names on buttons ID and method names for actions when clicked
 HashMap<Integer, String> ButtonActions = new HashMap<Integer, String>() {{
     put(0, "startVehicle");
     put(1, "stopVehicle");

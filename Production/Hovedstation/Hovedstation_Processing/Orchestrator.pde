@@ -22,7 +22,7 @@ class Orchestrator {
         try {
             this.getClass().getMethod(ButtonActions.get(ButtonID)).invoke(this);
         } catch (Exception e) {
-            println("Wrong method name: " + e);
+            println("Error method name: " + e);
         }
     }
     

@@ -8,8 +8,8 @@ Skole:      Uddannelsescenter Holstebro - HTX
 OBS: Programmet er udviklet og testet på Processing 4.0 beta 7
 Link: https://github.com/processing/processing4/releases/ 
 */
-import processing.serial.*;
-import java.lang.reflect.*;
+import processing.serial.*; //Serial communication with arduino
+import java.lang.reflect.*; //Used for button actions
 
 View screen = new View(0,0,1080,720);
 
