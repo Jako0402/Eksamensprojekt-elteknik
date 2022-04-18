@@ -108,13 +108,13 @@ class Storage {
     public DataPoint getLastObstacle() {
         return lastObstacle;
     }
-
-
+    
+    
     public void setCurrentTarget(int[] currentTarget) {
         this.currentTarget = currentTarget;
     }
-
-
+    
+    
     public int[] getCurrentTarget() {
         return currentTarget;
     }
@@ -218,12 +218,25 @@ class VehicleController {
     Algorithm algorithm;
     Storage storage;
     ComDevice arduino;
+    int[] lastCommandContent;
+    int lastCommandID;
     
     
     VehicleController(Algorithm algorithm, Storage storage, ComDevice arduino) {
         this.algorithm = algorithm;
         this.storage = storage;
         this.arduino = arduino;
+    }
+    
+    
+    public void update() {
+        //called every frame
+        arduino.update();
+    }
+    
+    
+    public void resendLastCommand() {
+        arduino.sendCommand(lastCommandID, lastCommandContent);
     }
     
     
@@ -236,6 +249,43 @@ class VehicleController {
     }
     
     
+    public boolean driveToTarget(int[] target) {
+        if (target.length != 2) return false;
+        arduino.sendCommand(1, new int[]{target[0], target[1]});
+        lastCommandID = 1;
+        lastCommandContent = target;
+        return true;
+    }
+    
+    
+    public void stopVehicle() {
+        arduino.sendCommand(2, new int[]{});
+        lastCommandID = 2;
+        lastCommandContent = new int[]{};
+    }
+    
+    
+    public int getArduinoReponseStatus() {
+        return this.arduino.getReponseStatus();
+    }
+    
+    
+    public void setArduinoReponseStatus(int responseStatus) {
+        this.arduino.setReponseStatus(responseStatus);
+    }
+    
+    
+    public int[] getArduinoReponseData() {
+        return this.arduino.getReponseData();
+    }
+    
+    
+    private Storage getStorage() {
+        //Returns a reference to storage object
+        return storage;
+    }
+    
+    
     //Methods below this line are NOT supposed to be invoked from outside class//
     //-------------------------------------------------------------------------//
     private ArrayList<dataRequest> fulfillDataRequest(ArrayList<dataRequest> request) {
@@ -244,7 +294,7 @@ class VehicleController {
             //println("requestID: " + requestID);
             switch(requestID) {
                 case 0:
-                    dr.setData(fulfullRequest0());
+                    dr.setData(getStorage());
                     break;
                 
                 case 1:
@@ -269,12 +319,6 @@ class VehicleController {
         }
         
         return request;
-    }
-    
-    
-    private Storage fulfullRequest0() {
-        //Returns a reference to storage object
-        return storage;
     }
     
     

@@ -14,6 +14,11 @@ HashMap<String, Integer> Requests = new HashMap<String, Integer>() {{
     put("lastObstacleAngle", 3);
 }};
 
+HashMap<Integer, String> ButtonActions = new HashMap<Integer, String>() {{
+    put(0, "startVehicle");
+    put(1, "stopVehicle");
+}};
+
 
 //List with all buttons
 ArrayList<Button> ButtonList = new ArrayList<Button>();

@@ -85,7 +85,12 @@ class ComDevice {
         //6 = Eroor: Mismatch between command and repsonse (not implementet yew)
         return responseStatus;
     }
-    
+
+
+    public void setReponseStatus(int responseStatus) {
+        this.responseStatus = responseStatus;
+    }
+
     
     public int[] getReponseData() {
         if (responseStatus != 3) println("Warning: getReponseData returning bad data");

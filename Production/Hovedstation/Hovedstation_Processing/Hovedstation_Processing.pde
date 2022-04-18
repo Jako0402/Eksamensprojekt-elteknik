@@ -9,17 +9,17 @@ OBS: Programmet er udviklet og testet på Processing 4.0 beta 7
 Link: https://github.com/processing/processing4/releases/ 
 */
 import processing.serial.*;
+import java.lang.reflect.*;
 
 View screen = new View(0,0,1080,720);
+
 ComDevice arduino = new ComDevice(new Serial(this, Serial.list()[0], 9600)); //Crashes with no Ardunio. Needs rework
-
-
-
 Storage sto = new Storage();
 WallFollowAlgorithm alg = new WallFollowAlgorithm();
 VehicleController vc = new VehicleController(alg, sto, arduino);
-Dataviewer dv = new Dataviewer(sto);
+Orchestrator orc = new Orchestrator(vc);
 
+Dataviewer dv = new Dataviewer(sto);
 
 
 void setup() {
@@ -29,7 +29,6 @@ void setup() {
     size(1080, 720);
     textSize(40);
     
-    vc.generateNewTarget();
     sto.addDataPointToStorage(new DataPoint(-50, 50, 0, false));
     
     screen.addChildrenToList(new UIElement[] {
@@ -53,7 +52,7 @@ void draw() {
     screen.setComponentSize(width, height);
     screen.rescaleChildren();
     
-    arduino.update();
+    orc.update();
     
 }
 
@@ -91,7 +90,7 @@ void mouseReleased() {
         for (Button button : ButtonList) {
             if (button.getButtonHover() && button.getButtonStatus()) {
                 button.setIsClicked(false);
-                handleButton(button.getButtonID());
+                orc.handleButton(button.getButtonID());
                 break;
             }
         }
@@ -113,17 +112,3 @@ void mouseWheel(MouseEvent event) {
     dv.mouseWheel(event);
 }
 
-
-void handleButton(int pressedButtonID) {
-    switch(pressedButtonID) {
-        case 0:
-            print(arduino.sendCommand(1, new int[]{100, 200}));
-        break;
-        
-        case 1:
-            print(arduino.sendCommand(2, new int[]{}));
-        break;
-    }
-    
-    
-}

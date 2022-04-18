@@ -39,9 +39,10 @@ class Dataviewer extends UIElement implements MouseHover {
                 circle(coords[0], coords[1], 10);
             }
         }
-        
-        //println(MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY));
-        //getPixelsToCoordinates(mouseX, mouseY);
+        int[] target = storage.getCurrentTarget();
+        int[] coords = geCoordinatesToPixels(target[0], target[1]);
+        circle(coords[0], coords[1], 15);
+    
         
         if (showCoords && checkMouseHover()) {
             showCoordsMouse();
