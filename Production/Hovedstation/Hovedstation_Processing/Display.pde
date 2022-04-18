@@ -27,12 +27,12 @@ class Dataviewer extends UIElement implements MouseHover {
     public void display() {
         fill(150);
         rect(origoX, origoY, componentWidth, componentHeight);
-
-
+        
+        
         String[] keys = calculateKeyList(viewX, viewY, cellResolution);
         ArrayList<ArrayList<DataPoint>> listList = getPointListList(keys);
-
-        for (ArrayList<DataPoint> list : listList) {
+        
+        for (ArrayList < DataPoint > list : listList) {
             for (DataPoint dp : list) {
                 fill(0);
                 int[] coords = geCoordinatesToPixels(dp.getXpos(), dp.getYpos());
@@ -42,55 +42,70 @@ class Dataviewer extends UIElement implements MouseHover {
         
         //println(MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY));
         //getPixelsToCoordinates(mouseX, mouseY);
-
-        if (showCoords && (MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY))) {
-            text("X: " + str(getPixelsToCoordinates(mouseX, mouseY)[0]) + " Y: " + str(getPixelsToCoordinates(mouseX, mouseY)[1]), mouseX, mouseY);
+        
+        if (showCoords && checkMouseHover()) {
+            showCoordsMouse();
         }
     }
-
-
+    
+    
     public void mouseDragged() {
         //Called from void mouseDragged() NB: Only left mouse button
         //Positive = move right / down
         if (!canDrag) return;
-
+        
         int dX = lastMouseCoords[0] - mouseX;
         int dY = mouseY - lastMouseCoords[1];
         
         float dPercentX = float(dX) / float(componentWidth);
         float dPercentY = float(dY) / float(componentHeight);
-
+        
         int[] viewLength = getViewLength();
-
+        
         int dXCoords = int(dPercentX * viewLength[0]);
         int dYCoords = int(dPercentY * viewLength[1]);
-
+        
         setViewX(new int[]{viewOrigin[0] + dXCoords, viewOrigin[1] + dXCoords});
         setViewY(new int[]{viewOrigin[2] + dYCoords, viewOrigin[3] + dYCoords});
         
-
+        
     }
-
-
+    
+    
     public void mousePressed() {
-        if(!(MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY))) return;
+        if (!checkMouseHover()) return;
         //Called from void mousePressed() NB: Only left mouse button
         viewOrigin = new int[]{viewX[0], viewX[1], viewY[0], viewY[1]};
         lastMouseCoords = new int[]{mouseX, mouseY};
         canDrag = true; 
     }
     
-
+    
     public void mouseReleased() {
         //Called from void mouseReleased() NB: Only left mouse button
         canDrag = false;
     }
-
-
+    
+    
     public void mouseCenter() {
+        //Called when mouse wheel pressed
+        if (!checkMouseHover()) return;
         showCoords = !showCoords;
     }
-
+    
+    
+    public void mouseWheel(MouseEvent event) {
+        //Called when scrool
+        if (!checkMouseHover()) return;
+        int scrool = event.getCount();
+        //int dScrool = scrool * (getViewLength[0] / 100);
+        //println(scrool);
+        int[] tempX = getViewX();
+        int[] tempY = getViewY();
+        setViewX(new int[]{tempX[0] - scrool, tempX[1] + scrool});
+        setViewY(new int[]{tempY[0] - scrool, tempY[1] + scrool});
+    }
+    
     
     public int[] getViewX() {
         return viewX;
@@ -184,18 +199,23 @@ class Dataviewer extends UIElement implements MouseHover {
         
         int pointX = coordinateX - viewX[0];
         int pointY = coordinateY - viewY[0];
-
+        
         float pointXPercent = float(pointX) / float(lengths[0]);
         float pointYPercent = 1 - float(pointY) / float(lengths[1]);
-
+        
         int pixelX = int(pointXPercent * componentWidth) + origoX;
         int pixelY = int(pointYPercent * componentHeight) + origoY;
-
+        
         return new int[]{pixelX, pixelY};
     }
-
-
+    
+    
     private boolean checkMouseHover() {
         return MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY);
+    }
+    
+    
+    private void showCoordsMouse() {
+        text("X: " + str(getPixelsToCoordinates(mouseX, mouseY)[0]) + " Y: " + str(getPixelsToCoordinates(mouseX, mouseY)[1]), mouseX, mouseY);
     }
 }

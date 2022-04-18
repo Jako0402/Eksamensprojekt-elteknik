@@ -109,6 +109,11 @@ void mouseDragged() {
 }
 
 
+void mouseWheel(MouseEvent event) {
+    dv.mouseWheel(event);
+}
+
+
 void handleButton(int pressedButtonID) {
     switch(pressedButtonID) {
         case 0:

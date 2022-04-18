@@ -232,7 +232,7 @@ class VehicleController {
         requiredData = fulfillDataRequest(requiredData);
         int[] target = algorithm.calculateTarget(requiredData);
         storage.setCurrentTarget(target);
-        return new int[1];
+        return target;
     }
     
     
