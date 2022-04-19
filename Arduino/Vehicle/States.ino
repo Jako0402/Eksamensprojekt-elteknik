@@ -17,10 +17,10 @@ void find_point() {
     }
   }
   if (digitalRead(18)) {
-    switch (state) {  //Skifter
-      case 0:         //til
-        state = 112;  //stadiet
-        break;        //"stop"
+    switch (state) {  //Skifter ti stadiet
+      case 0:         //"stop", hvis der klikkes på kontakt 5
+        state = 112;  
+        break;        
     }
   }
 }
@@ -49,7 +49,7 @@ void stop_ () {
 
   if (digitalRead(14)) {
     switch (state) {  //Skifter
-      case 112:         //til
+      case 112:       //til
         state = 0;    //stadiet
         left_motor.drive(left_motor_speed);
         right_motor.drive(right_motor_speed);

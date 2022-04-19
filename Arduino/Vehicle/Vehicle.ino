@@ -91,7 +91,6 @@ void loop() {
 
     tid2 = millis();
   }
-
   
     if ((millis() - tid) > 100) {
       if (count_left_encoder < count_right_encoder) {
@@ -109,7 +108,6 @@ void loop() {
 
       tid = millis();
     }
-  
 
 }
 
