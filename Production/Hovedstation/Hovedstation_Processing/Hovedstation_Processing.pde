@@ -25,11 +25,13 @@ Dataviewer dv = new Dataviewer(sto);
 void setup() {
     surface.setResizable(true);
     surface.setTitle("Eksamen i El-teknik 2022 - Søren og Jakob");
-    setupButtons();
+    registerMethod("pre", this);
     size(1080, 720);
     textSize(40);
     
-    sto.addDataPointToStorage(new DataPoint(-50, 50, 0, false));
+    setupButtons();
+    
+    sto.addDataPointToStorage(new DataPoint( -50, 50, 0, false));
     
     screen.addChildrenToList(new UIElement[] {
         new Row().addChildrenToList(new UIElement[] {
@@ -37,8 +39,8 @@ void setup() {
                 TestButton0,
                 TestButton1,
             }),
-            
             dv,
+            
         }),
     });
     
@@ -46,11 +48,19 @@ void setup() {
 }
 
 
+void pre() {
+    if (w != width || h != height) {
+        //Sketch window has resized
+        w = width;
+        h = height;
+        windowsResized();
+    }   
+}
+
+
 void draw() {
     background(100); 
     screen.display();
-    screen.setComponentSize(width, height);
-    screen.rescaleChildren();
     
     orc.update();
     
@@ -79,7 +89,7 @@ void mousePressed() {
         
         dv.mousePressed();
         
-    }else if (mouseButton ==  CENTER) {
+    } else if (mouseButton ==  CENTER) {
         dv.mouseCenter();
     }
 }
@@ -112,3 +122,9 @@ void mouseWheel(MouseEvent event) {
     dv.mouseWheel(event);
 }
 
+
+void windowsResized() {
+    //println("RESIZE");
+    screen.setComponentSize(width, height);
+    screen.rescaleChildren();
+}

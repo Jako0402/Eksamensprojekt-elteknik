@@ -1,3 +1,6 @@
+int w, h; //Screen width and height
+
+
 //Colors used in program
 HashMap<String, Integer> Colors = new HashMap<String, Integer>() {{
     put("key1", color(204, 153, 0));

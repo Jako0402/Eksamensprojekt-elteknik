@@ -280,9 +280,8 @@ class VehicleController {
     }
     
     
-    private Storage getStorage() {
-        //Returns a reference to storage object
-        return storage;
+    public void setTargetInStorage(int[] currentTarget) {
+        storage.setCurrentTarget(currentTarget);
     }
     
     
@@ -294,7 +293,7 @@ class VehicleController {
             //println("requestID: " + requestID);
             switch(requestID) {
                 case 0:
-                    dr.setData(getStorage());
+                    dr.setData(this.storage);
                     break;
                 
                 case 1:

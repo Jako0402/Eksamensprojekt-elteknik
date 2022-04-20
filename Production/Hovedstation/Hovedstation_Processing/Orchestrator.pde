@@ -1,6 +1,5 @@
 class Orchestrator {
     VehicleController vehicleController;
-    Storage storage;
     int timeoutCounter = 0;
     boolean vehicleControllerActive = false;
     boolean vehicleReadyForCommand = true;
@@ -8,7 +7,6 @@ class Orchestrator {
     
     Orchestrator(VehicleController vehicleController) {
         this.vehicleController = vehicleController;
-        this.storage = vehicleController.getStorage();
     }
     
     
@@ -79,9 +77,9 @@ class Orchestrator {
             
             case 1:
                 println("vehicle got new coords");
-                storage.setCurrentTarget(new int[]{responseData[1], responseData[2]});
-            vehicleReadyForCommand = false;
-            break;
+                vehicleController.setTargetInStorage(new int[]{responseData[1], responseData[2]});
+                vehicleReadyForCommand = false;
+                break;
             
             case 2:
                 println("vehicle stopped");

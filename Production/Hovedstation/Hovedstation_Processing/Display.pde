@@ -1,5 +1,5 @@
 class Dataviewer extends UIElement implements MouseHover {
-    Storage storage;
+    Storage storage; //Read only
     int[] viewX = { - 100, 100};
     int[] viewY = { - 100, 100};
     int[] viewOrigin;
