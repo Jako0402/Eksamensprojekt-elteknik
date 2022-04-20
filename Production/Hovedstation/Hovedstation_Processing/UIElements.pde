@@ -109,7 +109,7 @@ class Axis extends UIElement {
     
     
     @Override
-    public UIElement addChildrenToList(UIElement[] elementsToAdd) {
+    public Axis addChildrenToList(UIElement[] elementsToAdd) {
         super.addChildrenToList(elementsToAdd);
         for (int i = 0; i < children.size(); i++) {
             this.axisLengths[i] = 1;     
@@ -122,14 +122,20 @@ class Axis extends UIElement {
     public void rescaleChildren() {
         super.rescaleChildren();
     }
-
-
+   
+    
     protected int getTotalAxisLength() {
         int tempLength = 0;
         for (int i : axisLengths) {
             tempLength += i;
         }
         return tempLength;
+    }
+
+
+    public Axis setAxisLengths(int[] axisLengths) {
+        this.axisLengths = axisLengths;
+        return this;
     }
 }
 
@@ -201,8 +207,8 @@ class Text extends UIElement {
     Text(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
     }
-
-
+    
+    
     Text() {
         super();
     }
@@ -239,6 +245,11 @@ class Text extends UIElement {
     public void setNewText(String newText) {
         text = newText;
     }
+
+
+    public String getText() {
+        return text;
+    }
 }
 
 
@@ -260,7 +271,7 @@ class Button extends Text implements MouseHover{
     
     @Override
     public void display() {
-        mouseHover = MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY);
+        mouseHover = checkMouseHover();
         
         if (mouseHover) {
             fill(Colors.get("key2"));
@@ -283,25 +294,109 @@ class Button extends Text implements MouseHover{
             return false;
         }
     }
-
-
+    
+    
     public boolean getButtonHover() {
         return mouseHover;
     }
-
-
+    
+    
     public void setIsClicked(boolean clickedValue) {
         isClicked = clickedValue;
     }
     
-
+    
     public int getButtonID() {
         return buttonID;
+    }
+    
+    
+    private boolean checkMouseHover() {
+        return MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY);
+    }
+}
+
+
+class TextField extends Text implements MouseHover{
+    int textFieldID;
+    boolean readyToActivate = false;
+    boolean fieldActive = false;
+    
+    TextField(int origoX, int origoY, int componentWidth, int componentHeight, int textFieldID) {
+        super(origoX, origoY, componentWidth, componentHeight);
+        this.textFieldID = textFieldID;
+    }
+    
+    
+    TextField(int textFieldID) {
+        super();
+        this.textFieldID = textFieldID;
+    }
+    
+    
+    @Override
+    public void display() {
+        fill(150);
+        if (fieldActive) fill(250);
+        
+        rect(origoX, origoY, componentWidth, componentHeight);
+        super.display();       
+    }
+    
+    
+    public void mousePressed() {
+        //Called when mousePressed
+        if (checkMouseHover()) {
+            readyToActivate = true;
+        }
+    }
+    
+    
+    public void mouseReleased() {
+        //Called when mouseReleased
+        if (readyToActivate && checkMouseHover()) {
+            fieldActive = true;
+
+        } else{
+            fieldActive = false;
+            readyToActivate = false;
+        }
+    }
+    
+    
+    public void keyPressed() {
+        //Called when key is pressed
+        if (!fieldActive || key == CODED) return;
+        if (key == ENTER) {
+            fieldActive = false;
+            readyToActivate = false;
+        } else if (key == BACKSPACE) {
+            if (text.length() < 1) return;
+            text = text.substring(0, text.length() - 1);
+        } else{
+            text += key;
+        }
+    }
+    
+
+    public boolean getFieldActive() {
+        return fieldActive;
+    }
+
+
+    public int getFieldID() {
+        return textFieldID;
+    }
+
+    
+    public boolean checkMouseHover() {
+        return MouseHover.checkMouseHover(origoX, origoY, componentWidth, componentHeight, mouseX, mouseY);
     }
 }
 
 
 class TestBox extends Text {
+    //Only used to test internal programming
     TestBox(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
     }

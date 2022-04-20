@@ -355,6 +355,8 @@ class VehicleController {
 
 
 class dataRequest {
+    //Object carrying a request and the returned data
+    //TODO: Fix lowercase name to 'DataRequest'
     int requestID;
     Object requestedData;
     

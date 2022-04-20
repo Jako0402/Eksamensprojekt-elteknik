@@ -19,7 +19,16 @@ class Orchestrator {
     public void handleButton(int ButtonID) {
         try {
             this.getClass().getMethod(ButtonActions.get(ButtonID)).invoke(this);
-        } catch (Exception e) {
+        } catch(Exception e) {
+            println("Error method name: " + e);
+        }
+    }
+    
+    
+    public void handleField(int FieldID) {
+        try {
+            this.getClass().getMethod(FieldActions.get(FieldID)).invoke(this);
+        } catch(Exception e) {
             println("Error method name: " + e);
         }
     }
@@ -29,6 +38,7 @@ class Orchestrator {
     private void operateVehicle() {
         if (timeoutCounter > 10) {
             println("TOO MANY TIMEOUTS...CODE A FIX HERE");
+            timeoutCounter = 0;
         }
         
         int status = vehicleController.getArduinoReponseStatus();
@@ -41,14 +51,14 @@ class Orchestrator {
                 break;
             
             case 4:
-            case 5:
-            case 6:
+                case5:
+                case6:
                 //Timeout
                 vehicleController.resendLastCommand();
                 vehicleReadyForCommand = false;
                 timeoutCounter++;
                 break;
-
+            
         }
         
         
@@ -78,8 +88,8 @@ class Orchestrator {
             case 1:
                 println("vehicle got new coords");
                 vehicleController.setTargetInStorage(new int[]{responseData[1], responseData[2]});
-                vehicleReadyForCommand = false;
-                break;
+            vehicleReadyForCommand = false;
+            break;
             
             case 2:
                 println("vehicle stopped");

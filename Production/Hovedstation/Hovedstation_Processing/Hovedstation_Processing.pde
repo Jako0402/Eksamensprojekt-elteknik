@@ -23,38 +23,30 @@ Dataviewer dv = new Dataviewer(sto);
 
 
 void setup() {
-    surface.setResizable(true);
-    surface.setTitle("Eksamen i El-teknik 2022 - Søren og Jakob");
-    registerMethod("pre", this);
+    windowResizable(true);
+    windowTitle("Eksamen i El-teknik 2022 - Søren og Jakob");
     size(1080, 720);
     textSize(40);
     
-    setupButtons();
+    setupInteractiveElements();
     
     sto.addDataPointToStorage(new DataPoint( -50, 50, 0, false));
+    new Row().addChildrenToList(new UIElement[] {TestButton0}).setAxisLengths(new int[]{1, 1, 2});
     
     screen.addChildrenToList(new UIElement[] {
         new Row().addChildrenToList(new UIElement[] {
             new Column().addChildrenToList(new UIElement[] {
                 TestButton0,
                 TestButton1,
-            }),
+                TestField,
+            }).setAxisLengths(new int[]{1, 1, 2}),
             dv,
             
         }),
     });
     
     
-}
-
-
-void pre() {
-    if (w != width || h != height) {
-        //Sketch window has resized
-        w = width;
-        h = height;
-        windowsResized();
-    }   
+    windowResized(); //Draw UI on start
 }
 
 
@@ -74,7 +66,18 @@ void serialEvent(Serial $) {
 
 
 void keyPressed() {
+    if (key == ENTER) {
+        for (TextField textField : FieldList) {
+            if (textField.getFieldActive()) {
+                orc.handleField(textField.getFieldID());
+                break;
+            }
+        }
+    }
     
+    for (TextField textField : FieldList) {
+        textField.keyPressed();
+    }
 }
 
 
@@ -85,6 +88,10 @@ void mousePressed() {
                 button.setIsClicked(true);
                 break;
             }
+        }
+        
+        for (TextField textField : FieldList) {
+            textField.mousePressed();
         }
         
         dv.mousePressed();
@@ -105,6 +112,10 @@ void mouseReleased() {
             }
         }
         
+        for (TextField textField : FieldList) {
+            textField.mouseReleased();
+        }
+        
         dv.mouseReleased();
     }
 }
@@ -113,7 +124,7 @@ void mouseReleased() {
 void mouseDragged() {
     if (mouseButton == LEFT) {
         //print("Dragged");
-        dv.mouseDragged();
+        dv.mouseDragged(); //<>//
     }
 }
 
@@ -123,7 +134,7 @@ void mouseWheel(MouseEvent event) {
 }
 
 
-void windowsResized() {
+void windowResized() {
     //println("RESIZE");
     screen.setComponentSize(width, height);
     screen.rescaleChildren();
