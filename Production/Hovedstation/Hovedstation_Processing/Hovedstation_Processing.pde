@@ -2,7 +2,7 @@
 Eksamensprojekt i teknikfaget "Computer og El-teknik" 2022
 Elever:     Søren Madsen og Jakob Kristensen
 Afleveret:  22/04/2022
-Vejleder:   Bent Arnoldsen
+Vejleder:   Bent Arnoldsen og Lars
 Skole:      Uddannelsescenter Holstebro - HTX
 
 OBS: Programmet er udviklet og testet på Processing 4.0 beta 7
@@ -30,7 +30,8 @@ void setup() {
     
     setupInteractiveElements();
     
-    sto.addDataPointToStorage(new DataPoint( -50, 50, 0, false));
+    sto.addDataPointToStorage(new DataPoint( -5, 0, 0, true));
+    sto.addDataPointToStorage(new DataPoint( -20, 10, 0, true));
     new Row().addChildrenToList(new UIElement[] {TestButton0}).setAxisLengths(new int[]{1, 1, 2});
     
     screen.addChildrenToList(new UIElement[] {
@@ -39,9 +40,11 @@ void setup() {
                 TestButton0,
                 TestButton1,
                 TestField,
-            }).setAxisLengths(new int[]{1, 1, 2}),
-            dv,
+            }).setAxisLengths(new int[]{2, 2, 1}),
             
+            new Column().addChildrenToList(new UIElement[] {
+                dv,
+            }),
         }),
     });
     
@@ -69,7 +72,7 @@ void keyPressed() {
     if (key == ENTER) {
         for (TextField textField : FieldList) {
             if (textField.getFieldActive()) {
-                orc.handleField(textField.getFieldID());
+                orc.handleField(textField.getFieldID(), textField.getText());
                 break;
             }
         }

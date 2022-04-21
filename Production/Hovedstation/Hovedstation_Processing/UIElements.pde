@@ -370,6 +370,7 @@ class TextField extends Text implements MouseHover{
         if (key == ENTER) {
             fieldActive = false;
             readyToActivate = false;
+            setNewText("");
         } else if (key == BACKSPACE) {
             if (text.length() < 1) return;
             text = text.substring(0, text.length() - 1);
