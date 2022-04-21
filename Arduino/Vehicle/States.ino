@@ -21,6 +21,7 @@ void find_point() {
       case 0:
         state = 112;
         break;
+
     }
   }
 }
@@ -49,7 +50,7 @@ void stop_ () {
 
   if (digitalRead(14)) {
     switch (state) {  //Skifter
-      case 112:         //til
+      case 112:       //til
         state = 0;    //stadiet
         left_motor.drive(left_motor_speed);
         right_motor.drive(right_motor_speed);

@@ -123,22 +123,24 @@ void loop() {
     tid2 = millis();
   }
 
-  if ((millis() - tid) > 100) {
-    if (count_left_encoder < count_right_encoder) {
-      right_motor_speed--;
-      count_left_encoder = 0;
-      count_right_encoder = 0;
-    }
-    if (count_left_encoder > count_right_encoder) {
-      right_motor_speed++;
-      count_left_encoder = 0;
-      count_right_encoder = 0;
-    }
-    left_motor.drive(left_motor_speed);
-    right_motor.drive(right_motor_speed);
+    if ((millis() - tid) > 100) {
+      if (count_left_encoder < count_right_encoder) {
+        right_motor_speed--;
+        count_left_encoder = 0;
+        count_right_encoder = 0;
+      }
+      if (count_left_encoder > count_right_encoder) {
+        right_motor_speed++;
+        count_left_encoder = 0;
+        count_right_encoder = 0;
+      }
+      left_motor.drive(left_motor_speed);
+      right_motor.drive(right_motor_speed);
 
-    tid = millis();
-  }
+      tid = millis();
+    }
+
+
 }
 
 
