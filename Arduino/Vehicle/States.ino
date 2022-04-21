@@ -9,18 +9,18 @@ void find_point() {
       last_touch = millis();
       Serial.print("Knap ");
       Serial.println(i + 1);
-      switch (state) {  //Skifter
-        case 0:         //til
-          state = 1;    //stadiet
-          break;        //"point_found"
+      switch (state) {  //Skifter til stadiet "point_found"
+        case 0:
+          state = 1;
+          break;
       }
     }
   }
   if (digitalRead(18)) {
-    switch (state) {  //Skifter
-      case 0:         //til
-        state = 112;  //stadiet
-        break;        //"stop"
+    switch (state) {  //Skifter til stadiet "stop"
+      case 0:
+        state = 112;
+        break;
     }
   }
 }
