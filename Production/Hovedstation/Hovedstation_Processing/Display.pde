@@ -88,7 +88,12 @@ class Dataviewer extends UIElement implements MouseHover {
     public void mouseWheel(MouseEvent event) {
         //Called when scrool
         if (!checkMouseHover()) return;
-        int scrool = event.getCount();
+        int mouseScrool = event.getCount();
+        
+        //Limit max and min size and scrool
+        if ((mouseScrool < 0 && getViewLength()[0] < 15) || mouseScrool > 0 && getViewLength()[0] > 1000) return;
+        
+        int scrool = event.getCount() + event.getCount() * (getViewLength()[0] / 50);
         //int dScrool = scrool * (getViewLength[0] / 100);
         //println(scrool);
         int[] tempX = getViewX();
@@ -218,7 +223,7 @@ class Dataviewer extends UIElement implements MouseHover {
     
     
     private void drawGrid() {
-        stroke(135);
+        stroke(Colors.get("gridLine"));
         int endKeys[] = calculateEndKeys(viewX, viewY); //xMin, xMax, yMin, yMax
         
         //Vertical lines
@@ -244,16 +249,17 @@ class Dataviewer extends UIElement implements MouseHover {
         
         for (ArrayList < DataPoint > list : listList) {
             for (DataPoint dp : list) {
-
-                //Colour based on datapoint 
+                
+                //Colour based on datapoint
+                stroke(Colors.get("outline")); 
                 if (dp.getObstacle()) {
                     fill(Colors.get("obstaclePoint"));
                 } else{
-                     fill(Colors.get("clearPoint"));
+                    fill(Colors.get("clearPoint"));
                 }
                 
                 int[] coords = getCoordinatesToPixels(dp.getXpos(), dp.getYpos());
-                circle(coords[0], coords[1], 10);
+                circle(coords[0], coords[1], calculatePointSize(5));
             }
         }
     }
@@ -266,11 +272,13 @@ class Dataviewer extends UIElement implements MouseHover {
         for (WallSegment ws : wallList) {
             int[] point1 = ws.getPoint1();
             int[] point2 = ws.getPoint2();
-            stroke(0);
+            stroke(Colors.get("walls"));
             //println("Wall: " + point1[0] + " " + point1[1] + " " + point2[0] + " " + point2[1]);
             int[] coords1 = getCoordinatesToPixels(point1[0], point1[1]);
             int[] coords2 = getCoordinatesToPixels(point2[0], point2[1]);
+            strokeWeight(calculatePointSize(1));
             line(coords1[0], coords1[1], coords2[0], coords2[1]);
+            strokeWeight(1);
         }
     }
     
@@ -278,7 +286,8 @@ class Dataviewer extends UIElement implements MouseHover {
     private void drawTarget() {
         int[] target = storage.getCurrentTarget();
         int[] coords = getCoordinatesToPixels(target[0], target[1]);
-        circle(coords[0], coords[1], 15);
+        fill(Colors.get("targetPoint"));
+        circle(coords[0], coords[1], calculatePointSize(7));
     }
     
     
@@ -287,6 +296,22 @@ class Dataviewer extends UIElement implements MouseHover {
         int[] vehiclePos = new int[]{lastPosDP.getXpos(), lastPosDP.getYpos()};
         int[] coords = getCoordinatesToPixels(vehiclePos[0], vehiclePos[1]);
         //println("draw pos: " + vehiclePos[0] + " " + vehiclePos[1]);
-        circle(coords[0], coords[1], 25);
+        pushMatrix();
+        translate(coords[0], coords[1]);
+        float angleRad = lastPosDP.getAngle() * (PI / 180);
+        rotate(-angleRad);
+        fill(Colors.get("positionPoint")); 
+        triangle(calculatePointSize(25), 0,
+                 -calculatePointSize(10), calculatePointSize(5), 
+                 -calculatePointSize(10), -calculatePointSize(5));
+        popMatrix();
+        circle(coords[0], coords[1], calculatePointSize(5));
+    }
+    
+    
+    private int calculatePointSize(int startSize) {
+        int viewLengthAjust = int(float(startSize) + (1000 / float(getViewLength()[0])));
+        int frameAjust = int(float(viewLengthAjust) * (float(width) / float(1080)));
+        return frameAjust;
     }
 }

@@ -280,7 +280,7 @@ class Button extends Text implements MouseHover{
             fill(Colors.get("primary"));
         }
         if (isClicked) fill(Colors.get("secondary"));
-        
+        stroke(Colors.get("outline"));
         rect(origoX, origoY, componentWidth, componentHeight);
         super.display();
     }

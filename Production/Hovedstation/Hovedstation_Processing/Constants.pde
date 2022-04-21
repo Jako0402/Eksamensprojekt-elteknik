@@ -5,7 +5,11 @@ HashMap<String, Integer> Colors = new HashMap<String, Integer>() {{
     put("secondary", color(204, 53, 00));
     put("clearPoint", color(10, 128, 10));
     put("obstaclePoint", color(10, 10, 10));
-    
+    put("targetPoint", color(255, 10, 10));
+    put("positionPoint", color(10, 10, 255));
+    put("outline", color(0, 0, 0));
+    put("gridLine", color(130, 130, 130));
+    put("walls", color(0, 0, 0));
 }};
 
 
