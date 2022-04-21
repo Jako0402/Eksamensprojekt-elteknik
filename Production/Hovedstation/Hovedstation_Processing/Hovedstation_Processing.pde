@@ -35,13 +35,19 @@ void setup() {
     //sto.addDataPointToStorage(new DataPoint( 15, 5, 75, true));
     new Row().addChildrenToList(new UIElement[] {TestButton0}).setAxisLengths(new int[]{1, 1, 2});
     
+    //UI / Mainstream
     screen.addChildrenToList(new UIElement[] {
         new Row().addChildrenToList(new UIElement[] {
             new Column().addChildrenToList(new UIElement[] {
-                TestButton0,
-                TestButton1,
+                new Row().addChildrenToList(new UIElement[] {
+                    TestButton0,
+                    TestButton1,
+                }),
+                
+                
+                
                 TestField,
-            }).setAxisLengths(new int[]{2, 2, 1}),
+            }).setAxisLengths(new int[]{1, 5}),
             
             new Column().addChildrenToList(new UIElement[] {
                 dv,
