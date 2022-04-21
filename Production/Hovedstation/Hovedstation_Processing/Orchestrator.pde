@@ -1,14 +1,14 @@
 class Orchestrator {
     VehicleController vehicleController;
-    Storage storage;
     int timeoutCounter = 0;
+    int statusFrequency = 1200; //ms must be larger than timeout
+    int lastStatusTime; //ms
     boolean vehicleControllerActive = false;
     boolean vehicleReadyForCommand = true;
     
     
     Orchestrator(VehicleController vehicleController) {
         this.vehicleController = vehicleController;
-        this.storage = vehicleController.getStorage();
     }
     
     
@@ -21,19 +21,38 @@ class Orchestrator {
     public void handleButton(int ButtonID) {
         try {
             this.getClass().getMethod(ButtonActions.get(ButtonID)).invoke(this);
-        } catch (Exception e) {
-            println("Error method name: " + e);
+        } catch(Exception e) {
+            println("Error button method name: " + e);
         }
     }
+    
+    
+    public void handleField(int FieldID, String fieldText) {
+        try {
+            this.getClass().getMethod(FieldActions.get(FieldID), String.class).invoke(this, fieldText);
+        } catch(Exception e) {
+            println("Error field method name: " + e);
+        }
+    }
+    
     
     //Methods below this line are NOT supposed to be invoked from outside class//
     //-------------------------------------------------------------------------//
     private void operateVehicle() {
+        int status = vehicleController.getArduinoReponseStatus();
+
+
+        if ((millis() - lastStatusTime) > statusFrequency) {
+            requestStatus();
+        }
+
+
         if (timeoutCounter > 10) {
             println("TOO MANY TIMEOUTS...CODE A FIX HERE");
+            timeoutCounter = 0;
         }
         
-        int status = vehicleController.getArduinoReponseStatus();
+        
         switch(status) {
             
             case 3:
@@ -43,18 +62,19 @@ class Orchestrator {
                 break;
             
             case 4:
-            case 5:
-            case 6:
+                case5:
+                case6:
                 //Timeout
                 vehicleController.resendLastCommand();
+                lastStatusTime = millis();
                 vehicleReadyForCommand = false;
                 timeoutCounter++;
                 break;
-
+            
         }
         
         
-        if (vehicleReadyForCommand) {
+        if (vehicleReadyForCommand && vehicleControllerActive) {
             generateAndDriveToTarget();
         }
     }
@@ -62,6 +82,9 @@ class Orchestrator {
     
     private void generateAndDriveToTarget() {
         vehicleController.driveToTarget(vehicleController.generateNewTarget());
+        lastStatusTime = millis(); //reset counter for status update
+        ArrayList<WallSegment> newWalls= vehicleController.generateWallSegments();
+        vehicleController.addWallSegmentsToStorage(newWalls);
         vehicleReadyForCommand = false;
     }
     
@@ -74,12 +97,19 @@ class Orchestrator {
         switch(responseData[0]) {
             case 0:
                 println("vehicle status update");
-                vehicleReadyForCommand = !(responseData[3] == 0);
+                vehicleReadyForCommand = !(responseData[4] == 0);
+                DataPoint dpToAdd = new DataPoint(
+                    responseData[1], 
+                    responseData[2], 
+                    responseData[3], 
+                    (responseData[4] > 0)
+                );
+                vehicleController.addDataPointToStorage(dpToAdd);
                 break;
             
             case 1:
                 println("vehicle got new coords");
-                storage.setCurrentTarget(new int[]{responseData[1], responseData[2]});
+                vehicleController.setTargetInStorage(new int[]{responseData[1], responseData[2]});
             vehicleReadyForCommand = false;
             break;
             
@@ -90,10 +120,16 @@ class Orchestrator {
                 break;
             
             default:
-            println("Wrong response");
-            break;	
-            
+                println("Wrong response");
+                return;	   
         }
+    }
+
+
+    private void requestStatus() {
+        println("requestStatus");
+        vehicleController.requestArduinoStatus();
+        lastStatusTime = millis();
     }
     
     
@@ -102,13 +138,20 @@ class Orchestrator {
         generateAndDriveToTarget();
         vehicleControllerActive = true;
         vehicleReadyForCommand = false;
+        lastStatusTime = millis();
     }
     
     
     void stopVehicle() {
         if (!vehicleControllerActive) return;
         vehicleController.stopVehicle();
-        vehicleControllerActive = false;
-        vehicleReadyForCommand = true;
+        vehicleReadyForCommand = false;
+        lastStatusTime = millis();
     }
+    
+    
+    void testHandleButton(String printText) {
+        println(printText);
+    }
+
 }

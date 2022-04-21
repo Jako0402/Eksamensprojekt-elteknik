@@ -69,6 +69,9 @@ class ComDevice {
         String commandToSend = generateCommand(id, contet);
         int checksumToSend = int(sumByteFromString(commandToSend));
         
+        print("commandToSend: " + commandToSend);
+        println(char(checksumToSend));
+
         if (!pushDataToSerial(commandToSend, checksumToSend)) return false; //Error sending (not implemented yew)
         
         return true;
@@ -239,7 +242,7 @@ class ComDevice {
     
     
     private boolean pushDataToSerial(String commandToSend, int checksumToSend) {
-        //Sends data to serial device. Might add check here later
+        //Sends data to serial device. TODO: add check here later
         comPort.write(commandToSend);
         comPort.write(checksumToSend);
         commandSendTime = millis(); //Start timeout timer

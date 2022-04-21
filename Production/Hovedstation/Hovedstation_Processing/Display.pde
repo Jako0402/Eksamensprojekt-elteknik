@@ -1,12 +1,12 @@
 class Dataviewer extends UIElement implements MouseHover {
-    Storage storage;
-    int[] viewX = { - 100, 100};
-    int[] viewY = { - 100, 100};
+    Storage storage; //Read only
+    int[] viewX = { - 25, 25};
+    int[] viewY = { - 25, 25};
     int[] viewOrigin;
     int[] lastMouseCoords;
     int cellResolution; //Must match Storage object
     boolean canDrag = false;
-    boolean showCoords = false;
+    boolean showCoords = true;
     
     
     Dataviewer(int origoX, int origoY, int componentWidth, int componentHeight, Storage storage) {
@@ -27,22 +27,12 @@ class Dataviewer extends UIElement implements MouseHover {
     public void display() {
         fill(150);
         rect(origoX, origoY, componentWidth, componentHeight);
+        drawGrid();
+        drawPoints();
+        drawWalls();
+        drawTarget();
+        drawPosition();
         
-        
-        String[] keys = calculateKeyList(viewX, viewY, cellResolution);
-        ArrayList<ArrayList<DataPoint>> listList = getPointListList(keys);
-        
-        for (ArrayList < DataPoint > list : listList) {
-            for (DataPoint dp : list) {
-                fill(0);
-                int[] coords = geCoordinatesToPixels(dp.getXpos(), dp.getYpos());
-                circle(coords[0], coords[1], 10);
-            }
-        }
-        int[] target = storage.getCurrentTarget();
-        int[] coords = geCoordinatesToPixels(target[0], target[1]);
-        circle(coords[0], coords[1], 15);
-    
         
         if (showCoords && checkMouseHover()) {
             showCoordsMouse();
@@ -147,20 +137,25 @@ class Dataviewer extends UIElement implements MouseHover {
         }
         
         //Find all end keys
-        int xMin = xRange[0] / 10 - 1;
-        int xMax = xRange[1] / 10 + 1;
-        int yMin = yRange[0] / 10 - 1;
-        int yMax = yRange[1] / 10 + 1;
-        //println("Keys: " + xMin + " " + xMax + " " + yMin + " " + yMax);
+        int endKeys[] = calculateEndKeys(xRange, yRange); //xMin, xMax, yMin, yMax
         
         //Loop and append keys
-        for (int tempXKey = xMin; tempXKey <= xMax; tempXKey++) {
-            for (int tempYKey = yMin; tempYKey <= yMax; tempYKey++) {
+        for (int tempXKey = endKeys[0]; tempXKey <= endKeys[1]; tempXKey++) {
+            for (int tempYKey = endKeys[2]; tempYKey <= endKeys[3]; tempYKey++) {
                 foundKeys = append(foundKeys, str(tempXKey) + "," + str(tempYKey));
             }
         }
         
         return foundKeys;
+    }
+    
+    
+    private int[] calculateEndKeys(int[] xRange, int[] yRange) {
+        int xMin = xRange[0] / cellResolution - 1;
+        int xMax = xRange[1] / cellResolution + 1;
+        int yMin = yRange[0] / cellResolution - 1;
+        int yMax = yRange[1] / cellResolution + 1;
+        return new int[] {xMin, xMax, yMin, yMax};
     }
     
     
@@ -194,7 +189,7 @@ class Dataviewer extends UIElement implements MouseHover {
     }
     
     
-    private int[] geCoordinatesToPixels(int coordinateX, int coordinateY) {
+    private int[] getCoordinatesToPixels(int coordinateX, int coordinateY) {
         //Takes a set of coordinates values and return the pixels
         int[] lengths = getViewLength();
         
@@ -218,5 +213,72 @@ class Dataviewer extends UIElement implements MouseHover {
     
     private void showCoordsMouse() {
         text("X: " + str(getPixelsToCoordinates(mouseX, mouseY)[0]) + " Y: " + str(getPixelsToCoordinates(mouseX, mouseY)[1]), mouseX, mouseY);
+    }
+    
+    
+    private void drawGrid() {
+        stroke(135);
+        int endKeys[] = calculateEndKeys(viewX, viewY); //xMin, xMax, yMin, yMax
+        
+        //Vertical lines
+        for (int xLine = endKeys[0]; xLine <= endKeys[1]; xLine++) {
+            int[] point1 = getCoordinatesToPixels(xLine * 10, endKeys[2] * 10);
+            int[] point2 = getCoordinatesToPixels(xLine * 10, endKeys[3] * 10);
+            line(point1[0], point1[1], point2[0], point2[1]);
+        }
+        
+        //Horizontal lines
+        for (int yLine = endKeys[2]; yLine <= endKeys[3]; yLine++) {
+            int[] point1 = getCoordinatesToPixels(endKeys[0] * 10, yLine * 10);
+            int[] point2 = getCoordinatesToPixels(endKeys[1] * 10, yLine * 10);
+            line(point1[0], point1[1], point2[0], point2[1]);
+        }
+        
+    }
+    
+    
+    private void drawPoints() {
+        String[] keys = calculateKeyList(viewX, viewY, cellResolution);
+        ArrayList<ArrayList<DataPoint>> listList = getPointListList(keys);
+        
+        for (ArrayList < DataPoint > list : listList) {
+            for (DataPoint dp : list) {
+                fill(0);
+                int[] coords = getCoordinatesToPixels(dp.getXpos(), dp.getYpos());
+                circle(coords[0], coords[1], 10);
+            }
+        }
+    }
+    
+
+    private void drawWalls() {
+        ArrayList<WallSegment> wallList = storage.getWallsList();
+        if (wallList == null) return;
+
+        for (WallSegment ws : wallList) {
+            int[] point1 = ws.getPoint1();
+            int[] point2 = ws.getPoint2();
+            stroke(0);
+            //println("Wall: " + point1[0] + " " + point1[1] + " " + point2[0] + " " + point2[1]);
+            int[] coords1 = getCoordinatesToPixels(point1[0], point1[1]);
+            int[] coords2 = getCoordinatesToPixels(point2[0], point2[1]);
+            line(coords1[0], coords1[1], coords2[0], coords2[1]);
+        }
+    }
+
+    
+    private void drawTarget() {
+        int[] target = storage.getCurrentTarget();
+        int[] coords = getCoordinatesToPixels(target[0], target[1]);
+        circle(coords[0], coords[1], 15);
+    }
+
+
+    private void drawPosition() {
+        DataPoint lastPosDP = storage.getLastDataPoint();
+        int[] vehiclePos = new int[]{lastPosDP.getXpos(), lastPosDP.getYpos()};
+        int[] coords = getCoordinatesToPixels(vehiclePos[0], vehiclePos[1]);
+        //println("draw pos: " + vehiclePos[0] + " " + vehiclePos[1]);
+        circle(coords[0], coords[1], 25);
     }
 }

@@ -2,7 +2,7 @@
 Eksamensprojekt i teknikfaget "Computer og El-teknik" 2022
 Elever:     Søren Madsen og Jakob Kristensen
 Afleveret:  22/04/2022
-Vejleder:   Bent Arnoldsen
+Vejleder:   Bent Arnoldsen og Lars
 Skole:      Uddannelsescenter Holstebro - HTX
 
 OBS: Programmet er udviklet og testet på Processing 4.0 beta 7
@@ -23,34 +23,39 @@ Dataviewer dv = new Dataviewer(sto);
 
 
 void setup() {
-    surface.setResizable(true);
-    surface.setTitle("Eksamen i El-teknik 2022 - Søren og Jakob");
-    setupButtons();
+    windowResizable(true);
+    windowTitle("Eksamen i El-teknik 2022 - Søren og Jakob");
     size(1080, 720);
     textSize(40);
     
-    sto.addDataPointToStorage(new DataPoint(-50, 50, 0, false));
+    setupInteractiveElements();
+    
+    sto.addDataPointToStorage(new DataPoint( -5, 0, 0, true));
+    sto.addDataPointToStorage(new DataPoint( -20, 10, 0, true));
+    new Row().addChildrenToList(new UIElement[] {TestButton0}).setAxisLengths(new int[]{1, 1, 2});
     
     screen.addChildrenToList(new UIElement[] {
         new Row().addChildrenToList(new UIElement[] {
             new Column().addChildrenToList(new UIElement[] {
                 TestButton0,
                 TestButton1,
-            }),
+                TestField,
+            }).setAxisLengths(new int[]{2, 2, 1}),
             
-            dv,
+            new Column().addChildrenToList(new UIElement[] {
+                dv,
+            }),
         }),
     });
     
     
+    windowResized(); //Draw UI on start
 }
 
 
 void draw() {
     background(100); 
     screen.display();
-    screen.setComponentSize(width, height);
-    screen.rescaleChildren();
     
     orc.update();
     
@@ -64,7 +69,18 @@ void serialEvent(Serial $) {
 
 
 void keyPressed() {
+    if (key == ENTER) {
+        for (TextField textField : FieldList) {
+            if (textField.getFieldActive()) {
+                orc.handleField(textField.getFieldID(), textField.getText());
+                break;
+            }
+        }
+    }
     
+    for (TextField textField : FieldList) {
+        textField.keyPressed();
+    }
 }
 
 
@@ -77,9 +93,13 @@ void mousePressed() {
             }
         }
         
+        for (TextField textField : FieldList) {
+            textField.mousePressed();
+        }
+        
         dv.mousePressed();
         
-    }else if (mouseButton ==  CENTER) {
+    } else if (mouseButton ==  CENTER) {
         dv.mouseCenter();
     }
 }
@@ -95,6 +115,10 @@ void mouseReleased() {
             }
         }
         
+        for (TextField textField : FieldList) {
+            textField.mouseReleased();
+        }
+        
         dv.mouseReleased();
     }
 }
@@ -103,7 +127,7 @@ void mouseReleased() {
 void mouseDragged() {
     if (mouseButton == LEFT) {
         //print("Dragged");
-        dv.mouseDragged();
+        dv.mouseDragged(); //<>//
     }
 }
 
@@ -112,3 +136,9 @@ void mouseWheel(MouseEvent event) {
     dv.mouseWheel(event);
 }
 
+
+void windowResized() {
+    //println("RESIZE");
+    screen.setComponentSize(width, height);
+    screen.rescaleChildren();
+}
