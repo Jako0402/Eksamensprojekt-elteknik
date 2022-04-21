@@ -1,8 +1,11 @@
 //Colors used in program
 HashMap<String, Integer> Colors = new HashMap<String, Integer>() {{
-    put("key1", color(204, 153, 0));
-    put("key2", color(204, 153, 50));
-    put("key3", color(204, 53, 00));
+    put("primary", color(204, 153, 70));
+    put("primaryDark", color(204, 153, 0));
+    put("secondary", color(204, 53, 00));
+    put("clearPoint", color(10, 128, 10));
+    put("obstaclePoint", color(10, 10, 10));
+    
 }};
 
 

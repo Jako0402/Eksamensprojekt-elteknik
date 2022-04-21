@@ -212,6 +212,7 @@ class Dataviewer extends UIElement implements MouseHover {
     
     
     private void showCoordsMouse() {
+        fill(0);
         text("X: " + str(getPixelsToCoordinates(mouseX, mouseY)[0]) + " Y: " + str(getPixelsToCoordinates(mouseX, mouseY)[1]), mouseX, mouseY);
     }
     
@@ -243,18 +244,25 @@ class Dataviewer extends UIElement implements MouseHover {
         
         for (ArrayList < DataPoint > list : listList) {
             for (DataPoint dp : list) {
-                fill(0);
+
+                //Colour based on datapoint 
+                if (dp.getObstacle()) {
+                    fill(Colors.get("obstaclePoint"));
+                } else{
+                     fill(Colors.get("clearPoint"));
+                }
+                
                 int[] coords = getCoordinatesToPixels(dp.getXpos(), dp.getYpos());
                 circle(coords[0], coords[1], 10);
             }
         }
     }
     
-
+    
     private void drawWalls() {
         ArrayList<WallSegment> wallList = storage.getWallsList();
         if (wallList == null) return;
-
+        
         for (WallSegment ws : wallList) {
             int[] point1 = ws.getPoint1();
             int[] point2 = ws.getPoint2();
@@ -265,15 +273,15 @@ class Dataviewer extends UIElement implements MouseHover {
             line(coords1[0], coords1[1], coords2[0], coords2[1]);
         }
     }
-
+    
     
     private void drawTarget() {
         int[] target = storage.getCurrentTarget();
         int[] coords = getCoordinatesToPixels(target[0], target[1]);
         circle(coords[0], coords[1], 15);
     }
-
-
+    
+    
     private void drawPosition() {
         DataPoint lastPosDP = storage.getLastDataPoint();
         int[] vehiclePos = new int[]{lastPosDP.getXpos(), lastPosDP.getYpos()};

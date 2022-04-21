@@ -274,12 +274,12 @@ class Button extends Text implements MouseHover{
         mouseHover = checkMouseHover();
         
         if (mouseHover) {
-            fill(Colors.get("key2"));
+            fill(Colors.get("primaryDark"));
         } else {
             isClicked = false;
-            fill(Colors.get("key1"));
+            fill(Colors.get("primary"));
         }
-        if (isClicked) fill(Colors.get("key3"));
+        if (isClicked) fill(Colors.get("secondary"));
         
         rect(origoX, origoY, componentWidth, componentHeight);
         super.display();

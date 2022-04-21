@@ -30,7 +30,7 @@ void setup() {
     
     setupInteractiveElements();
     
-    sto.addDataPointToStorage(new DataPoint( -5, 0, 0, true));
+    sto.addDataPointToStorage(new DataPoint( -5, 0, 0, false));
     sto.addDataPointToStorage(new DataPoint( -20, 10, 0, true));
     new Row().addChildrenToList(new UIElement[] {TestButton0}).setAxisLengths(new int[]{1, 1, 2});
     
