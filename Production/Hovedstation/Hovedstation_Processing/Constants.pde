@@ -29,6 +29,8 @@ HashMap<String, Integer> Requests = new HashMap<String, Integer>() {{
 HashMap<Integer, String> ButtonActions = new HashMap<Integer, String>() {{
     put(0, "startVehicle");
     put(1, "stopVehicle");
+    put(2, "saveToTXT");
+    put(3, "importFromTXT");
 }};
 
 
@@ -45,8 +47,8 @@ ArrayList<TextField> FieldList = new ArrayList<TextField>();
 
 
 //Testelements used to test varius functions
-Button TestButton0 = new Button(0);
-Button TestButton1 = new Button(1);
+Button TestButton0 = new Button(3);
+Button TestButton1 = new Button(2);
 TextField TestField = new TextField(0);
 
 

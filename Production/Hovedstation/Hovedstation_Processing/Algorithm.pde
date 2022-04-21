@@ -90,8 +90,8 @@ class Storage {
             dataPointList.add(dp);
         }
     }
-
-
+    
+    
     public void addWalls(ArrayList<WallSegment> wallsToAdd) {
         for (WallSegment segment : wallsToAdd) {
             wallsList.add(segment);
@@ -376,8 +376,8 @@ class VehicleController {
         lastCommandContent = target;
         return true;
     }
-
-
+    
+    
     public void addWallSegmentsToStorage(ArrayList<WallSegment> wallsToAdd) {
         storage.addWalls(wallsToAdd);
     }
@@ -419,6 +419,25 @@ class VehicleController {
     
     public void addDataPointToStorage(DataPoint dpToAdd) {
         storage.addDataPointToStorage(dpToAdd);
+    }
+    
+    
+    public String[] exportDataPoints() {
+        String[] exportedData = {};
+        
+        for (ArrayList < DataPoint > dataPointList : storage.getDataPointListMap().values()) {
+            for (DataPoint CurrentDataPoint : dataPointList) {
+                int dpXpos = CurrentDataPoint.getXpos();
+                int dpYpos = CurrentDataPoint.getYpos();
+                int dpAngle = CurrentDataPoint.getAngle();
+                int dpObstacle = CurrentDataPoint.getObstacle() ? 1 : 0; 
+                String dataLine = str(dpXpos) + ";" + str(dpYpos) + ";" + str(dpAngle) + ";" + str(dpObstacle); 
+                exportedData = append(exportedData, dataLine);
+                //println(dataLine);
+            }
+        }
+        
+        return exportedData;
     }
     
     
@@ -485,7 +504,7 @@ class VehicleController {
             int lastYpos = storage.getLastObstacle().getYpos();
             return new int[]{lastXpos, lastYpos};
         } catch(Exception e) {
-            //If no obstacle is encountered yew
+            //Ifno obstacle is encountered yew
             return new int[]{0,0};
         }
     }
@@ -496,7 +515,7 @@ class VehicleController {
         try {
             return storage.getLastObstacle().getAngle();
         } catch(Exception e) {
-            //If no obstacle is encountered yew
+            //Ifno obstacle is encountered yew
             return 0;
         }
     }
@@ -525,7 +544,7 @@ class VehicleController {
 
 
 class DataRequest {
-    //Object carrying a request and the returned data
+    //Objectcarrying a request and the returned data
     int requestID;
     String extraData;
     Object requestedData;

@@ -40,13 +40,13 @@ class Orchestrator {
     //-------------------------------------------------------------------------//
     private void operateVehicle() {
         int status = vehicleController.getArduinoReponseStatus();
-
-
+        
+        
         if ((millis() - lastStatusTime) > statusFrequency) {
             requestStatus();
         }
-
-
+        
+        
         if (timeoutCounter > 10) {
             println("TOO MANY TIMEOUTS...CODE A FIX HERE");
             timeoutCounter = 0;
@@ -83,7 +83,7 @@ class Orchestrator {
     private void generateAndDriveToTarget() {
         vehicleController.driveToTarget(vehicleController.generateNewTarget());
         lastStatusTime = millis(); //reset counter for status update
-        ArrayList<WallSegment> newWalls= vehicleController.generateWallSegments();
+        ArrayList<WallSegment> newWalls = vehicleController.generateWallSegments();
         vehicleController.addWallSegmentsToStorage(newWalls);
         vehicleReadyForCommand = false;
     }
@@ -102,8 +102,8 @@ class Orchestrator {
                     responseData[1], 
                     responseData[2], 
                     responseData[3], 
-                    (responseData[4] > 0)
-                );
+                   (responseData[4] > 0)
+                   );
                 vehicleController.addDataPointToStorage(dpToAdd);
                 break;
             
@@ -120,12 +120,12 @@ class Orchestrator {
                 break;
             
             default:
-                println("Wrong response");
-                return;	   
+            println("Wrong response");
+            return;	   
         }
     }
-
-
+    
+    
     private void requestStatus() {
         println("requestStatus");
         vehicleController.requestArduinoStatus();
@@ -150,8 +150,30 @@ class Orchestrator {
     }
     
     
+    void saveToTXT() {
+        String[] dataToExport = vehicleController.exportDataPoints();
+        saveStrings("save.txt", dataToExport);
+    }
+    
+    
+    void importFromTXT() {
+        String[] importedData = loadStrings("save.txt");
+
+        for (String dataString : importedData) {
+            String[] dataStringSplit = split(dataString, ';');
+            DataPoint importedDP = new DataPoint(
+                int(dataStringSplit[0]),
+                int(dataStringSplit[1]),
+                int(dataStringSplit[2]),
+                boolean(dataStringSplit[3])
+            );
+            vehicleController.addDataPointToStorage(importedDP);
+        }
+    }
+    
+    
     void testHandleButton(String printText) {
         println(printText);
     }
-
+    
 }
