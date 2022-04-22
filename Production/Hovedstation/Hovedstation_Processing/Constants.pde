@@ -1,3 +1,9 @@
+//Layers used for alle UI-elements (higher number = in front)
+//0 = Dataview (it stretches over component size. Must be furthest behind)
+//1 = other UIElements
+//2 = right-click menu (not programmed yew)
+PGraphics[] layers = new PGraphics[2];
+
 //Colors used in program
 HashMap<String, Integer> Colors = new HashMap<String, Integer>() {{
     put("primary", color(204, 153, 70));
@@ -9,7 +15,7 @@ HashMap<String, Integer> Colors = new HashMap<String, Integer>() {{
     put("positionPoint", color(10, 10, 255));
     put("outline", color(0, 0, 0));
     put("gridLine", color(130, 130, 130));
-    put("walls", color(0, 0, 0));
+    put("walls", color(35, 35, 35));
 }};
 
 
@@ -36,8 +42,7 @@ HashMap<Integer, String> ButtonActions = new HashMap<Integer, String>() {{
 
 //Names of FieldID and names for actions / methods when enter is pressed
 HashMap<Integer, String> FieldActions = new HashMap<Integer, String>() {{
-    put(0, "testHandleButton");
-    put(1, "testHandleButton");
+    put(0, "handleCommand");
 }};
 
 
@@ -47,18 +52,25 @@ ArrayList<TextField> FieldList = new ArrayList<TextField>();
 
 
 //Testelements used to test varius functions
-Button TestButton0 = new Button(3);
-Button TestButton1 = new Button(2);
+Button StartButton = new Button(0);
+Button StopButton = new Button(1);
+Button SaveButton = new Button(2);
+Button RestoreButton = new Button(3);
 TextField TestField = new TextField(0);
 
 
 //Add all buttons to a single list and config
 void setupInteractiveElements() {
     //Buttons
-    TestButton0.setNewText("Start");
-    TestButton1.setNewText("Stop");
-    ButtonList.add(TestButton0);
-    ButtonList.add(TestButton1);
+    StartButton.setNewText("Start");
+    StopButton.setNewText("Stop");
+    SaveButton.setNewText("Save");
+    RestoreButton.setNewText("Restore");
+
+    ButtonList.add(StartButton);
+    ButtonList.add(StopButton);
+    ButtonList.add(SaveButton);
+    ButtonList.add(RestoreButton);
 
     FieldList.add(TestField);
 }

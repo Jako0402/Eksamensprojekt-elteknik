@@ -1,5 +1,6 @@
 class UIElement {
-    int origoX, origoY, componentWidth, componentHeight; 
+    //Parrentclass. Alle things drawn on scrren must exten this
+    int origoX, origoY, componentWidth, componentHeight, layer; 
     ArrayList<UIElement> children;
     
     
@@ -22,6 +23,7 @@ class UIElement {
     
     
     public void display() {
+        //Displays alle children
         for (UIElement element : children) {
             element.display();
         }
@@ -29,6 +31,7 @@ class UIElement {
     
     
     public UIElement addChildrenToList(UIElement[] elementsToAdd) {
+        //Add a child to list of children
         for (UIElement childToAdd : elementsToAdd) {
             children.add(childToAdd);
         }
@@ -37,6 +40,7 @@ class UIElement {
     
     
     public void setOrigo(int newOrigoX, int newOrigoY) {
+        //Origo = top left corner
         origoX = newOrigoX;
         origoY = newOrigoY;
     }
@@ -76,6 +80,7 @@ class UIElement {
 
 
 class View extends UIElement {
+    //Class that holds ONE other instance
     View(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
     }
@@ -92,13 +97,14 @@ class View extends UIElement {
 
 
 class Axis extends UIElement {
-    int[] axisLengths;
-    int totalAxisLength;
+    //Holds children stacked (in a row or coloum)
+    int[] axisLengths; //Each child size or length
+    int totalAxisLength; //Total size or length
     
     
     Axis(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
-        axisLengths = new int[12];
+        axisLengths = new int[12]; //Max 12 elements
     }
     
     
@@ -112,7 +118,7 @@ class Axis extends UIElement {
     public Axis addChildrenToList(UIElement[] elementsToAdd) {
         super.addChildrenToList(elementsToAdd);
         for (int i = 0; i < children.size(); i++) {
-            this.axisLengths[i] = 1;     
+            this.axisLengths[i] = 1; //Child size is default 1    
         }
         return this;
     }
@@ -200,36 +206,42 @@ class Column extends Axis {
 
 
 class Text extends UIElement {
+    //Writes text
     String text = "Test";
-    char textAlign = 'C';
+    char textAlign = 'C'; //C=Center, L=left, R=right
     
     
     Text(int origoX, int origoY, int componentWidth, int componentHeight) {
         super(origoX, origoY, componentWidth, componentHeight);
+        layer = 1;
     }
     
     
     Text() {
         super();
+        layer = 1;
     }
     
     
     @Override
     public void display() {
+        //Change align
         switch(textAlign) {
             case 'L':
-                textAlign(LEFT);
+                layers[layer].textAlign(LEFT);
                 break;
             case 'C':
-                textAlign(CENTER);
+                layers[layer].textAlign(CENTER);
                 break;
             case 'R':
-                textAlign(RIGHT);
+                layers[layer].textAlign(RIGHT);
                 break;
         }
         
-        fill(0);
-        text(text, origoX, origoY, componentWidth, componentHeight);
+        //Draw text
+        layers[layer].fill(0);
+        layers[layer].textSize(40);
+        layers[layer].text(text, origoX, origoY, componentWidth, componentHeight);
     }
     
     
@@ -256,7 +268,7 @@ class Text extends UIElement {
 class Button extends Text implements MouseHover{
     boolean isClicked = false;
     boolean mouseHover = false;
-    int buttonID;
+    int buttonID; //Used to inkove correct method by buttonhandler
     Button(int origoX, int origoY, int componentWidth, int componentHeight, int buttonID) {
         super(origoX, origoY, componentWidth, componentHeight);
         this.buttonID = buttonID;
@@ -273,20 +285,24 @@ class Button extends Text implements MouseHover{
     public void display() {
         mouseHover = checkMouseHover();
         
+        //Change color based on status
         if (mouseHover) {
-            fill(Colors.get("primaryDark"));
+            layers[1].fill(Colors.get("primaryDark"));
         } else {
             isClicked = false;
-            fill(Colors.get("primary"));
+            layers[1].fill(Colors.get("primary"));
         }
-        if (isClicked) fill(Colors.get("secondary"));
-        stroke(Colors.get("outline"));
-        rect(origoX, origoY, componentWidth, componentHeight);
+        if (isClicked) layers[layer].fill(Colors.get("secondary"));
+
+        //Draw button
+        layers[layer].stroke(Colors.get("outline"));
+        layers[layer].rect(origoX, origoY, componentWidth, componentHeight);
         super.display();
     }
     
     
     public boolean getButtonStatus() {
+        //Get status. Change to false when read + true
         if (isClicked) {
             isClicked = false;
             return true;
@@ -318,9 +334,9 @@ class Button extends Text implements MouseHover{
 
 
 class TextField extends Text implements MouseHover{
-    int textFieldID;
-    boolean readyToActivate = false;
-    boolean fieldActive = false;
+    int textFieldID; //Used to invoke correct method
+    boolean readyToActivate = false; //clicked + mousehover
+    boolean fieldActive = false; //true = write text here
     
     TextField(int origoX, int origoY, int componentWidth, int componentHeight, int textFieldID) {
         super(origoX, origoY, componentWidth, componentHeight);
@@ -336,24 +352,25 @@ class TextField extends Text implements MouseHover{
     
     @Override
     public void display() {
-        fill(150);
-        if (fieldActive) fill(250);
+        //Change color based on status
+        layers[layer].fill(150);
+        if (fieldActive) layers[layer].fill(250);
         
-        rect(origoX, origoY, componentWidth, componentHeight);
+        layers[layer].rect(origoX, origoY, componentWidth, componentHeight);
         super.display();       
     }
     
     
     public void mousePressed() {
         //Called when mousePressed
-        if (checkMouseHover()) {
+        if (checkMouseHover()) { //If hover and mouse = readyToActivate
             readyToActivate = true;
         }
     }
     
     
     public void mouseReleased() {
-        //Called when mouseReleased
+        //Called when mouseReleased. Field is active when mouse is realased 
         if (readyToActivate && checkMouseHover()) {
             fieldActive = true;
 
@@ -365,7 +382,7 @@ class TextField extends Text implements MouseHover{
     
     
     public void keyPressed() {
-        //Called when key is pressed
+        //Called when key is pressed. Add text to field if active
         if (!fieldActive || key == CODED) return;
         if (key == ENTER) {
             fieldActive = false;
@@ -406,7 +423,7 @@ class TestBox extends Text {
     @Override
     public void display() {
         fill(150);
-        rect(origoX, origoY, componentWidth, componentHeight);
+        layers[layer].rect(origoX, origoY, componentWidth, componentHeight);
         super.display();
     }
 }
