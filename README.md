@@ -1,5 +1,5 @@
 # Til lærer og censor
-Filerne der fremvises ligger under "Production" samt Arduino/Vehicle
+Filerne der fremvises ligger under /Production samt Arduino/Vehicle
 
 # Eksamensprojekt-elteknik (ikke opdateret)
 Oversigt over vores filer, projekter og tests
