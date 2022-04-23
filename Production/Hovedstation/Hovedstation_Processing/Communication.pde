@@ -1,12 +1,12 @@
 class ComDevice {
-    Serial comPort;
-    String lastPortRead;
-    int[] expectedDataLengthArray = {4, 2, 0}; //Response from vehicle
-    int[] responseBuffer;
+    Serial comPort; //Connected arduino
+    String lastPortRead; //Last serial.read()
+    int[] expectedDataLengthArray = {4, 2, 0}; //Response length from vehicle
+    int[] responseBuffer; 
     int maxTimeout = 1000; //ms
     int commandSendTime; //millis()-reading at Serial.write()
     int responseStatus = 0;
-    boolean newData = false;
+    boolean newData = false; //True = need to read checksum
     
     ComDevice(Serial comPort) {
         this.comPort = comPort;
@@ -24,37 +24,37 @@ class ComDevice {
                 println("Timeout");
                 responseStatus = 4; //Timeout
             } else {
-                if (checkForEndCS()) responseStatus = 2; //If '!' is read, read CS (next char)
+                if (checkForEndCS()) responseStatus = 2; //If '!' is read, read CS (next char) and set status = 2
             }
         }
         
         //Parse response
         if (responseStatus == 2) { 
-            println("Response: " + lastPortRead);
+            println("Response: " + lastPortRead); //Debug: Print response to console
             
             if (validateData(lastPortRead) != 0) {  //Check package integrity
-                println("Error: Bad read");
-                responseStatus = 5;
+                println("Error: Bad read"); 
+                responseStatus = 5; //Bad package
                 return;
             } 
             
-            responseBuffer = splitDataToArray(lastPortRead);
+            responseBuffer = splitDataToArray(lastPortRead); //Split to int[]
             if (!checkResponseMatch(responseBuffer)) { //(not implementet yew)
                 println("Mismatch between command and repsonse");
                 responseStatus = 6;
                 return;
             }
 
-            responseStatus = 3;
+            responseStatus = 3; //Data ready to read
         }    
     }
     
     
     public void serialEvent() {
         //Called from void serialEvent()
-        if (responseStatus == 1) {
+        if (responseStatus == 1) { //Check if waiting for respones
             lastPortRead = comPort.readString();
-            newData = true;
+            newData = true; //We need to read the checksum
             //println("lastPortRead: " + lastPortRead);
         } else {
             comPort.clear(); //Clear buffer if not waiting
@@ -66,15 +66,15 @@ class ComDevice {
         //Checks and sends a command to Arduino
         if (!checkParameterLength(id, contet)) return false; //Wrong parameter length
         
-        String commandToSend = generateCommand(id, contet);
-        int checksumToSend = int(sumByteFromString(commandToSend));
+        String commandToSend = generateCommand(id, contet); 
+        int checksumToSend = int(sumByteFromString(commandToSend)); //Loop through all chars and sum to a checksum
         
-        print("commandToSend: " + commandToSend);
+        print("commandToSend: " + commandToSend); //DEBUG: print what is send to colsole
         println(char(checksumToSend));
 
         if (!pushDataToSerial(commandToSend, checksumToSend)) return false; //Error sending (not implemented yew)
         
-        return true;
+        return true; //Send complete
     }
     
     
@@ -187,16 +187,16 @@ class ComDevice {
     private boolean isInt(String testStr) {
         //Takes a string and returns true if it is a number
         if (testStr == null) { //Empty string
-            return false;
+            return false; //not int
         }
         
         try {
             int testInt = Integer.parseInt(testStr);
         } catch(NumberFormatException e) {
-            return false;
+            return false; //not int
         }
         
-        return true;
+        return true; //it is an int
     }
     
     
@@ -227,6 +227,8 @@ class ComDevice {
     private String generateCommand(int id, int[] contet) {
         //Generetes and returnscommand (no checksum)
         String commandToSend = "?" + str(id) + ";"; //Add start to command
+
+        //All commands follow structure 'int;' repeated 
         for (int i : contet) {
             commandToSend += str(i);
             commandToSend += ';';
@@ -263,7 +265,7 @@ class ComDevice {
         //Reads one char (CS) from Serial and appends it to 'lastPortRead'. Returns true if CS read
         if (newData) {
             lastPortRead += comPort.readChar();
-            newData = false;
+            newData = false; //We have now read CS
             comPort.clear();
             return true;
         }

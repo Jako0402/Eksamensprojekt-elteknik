@@ -1,7 +1,8 @@
 class DataPoint {
-    int xpos, ypos;
-    int angle;
-    boolean obstacle;
+    //Class that contains data for one data / response fron vehicle
+    int xpos, ypos; //coordinaes (in cm)
+    int angle; //degrees
+    boolean obstacle; //true = obstacle detected
     
     DataPoint(int xpos, int ypos, int angle, boolean obstacle) {
         this.xpos = xpos;
@@ -33,6 +34,7 @@ class DataPoint {
 
 
 class WallSegment {
+    //Holds data for calculated wallsegments as two endpoints
     int x1, y1, x2, y2;
     
     WallSegment(int x1, int y1, int x2, int y2) {
@@ -56,29 +58,31 @@ class WallSegment {
 
 
 class Storage {
+    //Holds all datapoints, walls and references to last datapoints
     HashMap<String, ArrayList<DataPoint>> dataPointListMap;
     ArrayList<WallSegment> wallsList;
     DataPoint lastDataPoint;
     DataPoint lastObstacle;
-    int[] currentTarget = {0, 0};
+    int[] currentTarget = {0, 0}; //Where vehicle is heading
     int cellResolution = 10; //Size of Hashmap key resolution
     
     Storage() {
         dataPointListMap = new HashMap<String, ArrayList<DataPoint>>();
         wallsList = new ArrayList<WallSegment>();
-        addDataPointToStorage(new DataPoint(0, 0, 0, false)); //0,0 is always free
+        addDataPointToStorage(new DataPoint(0, 0, 0, false)); //0,0 is always free 
     }
     
     
     public void addDataPointToStorage(DataPoint dp) {
         //Takes a datoPoint and adds it to appropriate cell / ArrayList
         
-        updateLastSave(dp);
+        updateLastSave(dp); //Updates 'lastDataPoint' and 'lastObstacle'
         
-        int[] dpKey = getDataPointKey(dp);
-        String key = str(dpKey[0]) + "," + str(dpKey[1]); //Key is "cell x-number","cell y-number"
+        int[] dpKey = getDataPointKey(dp); //Datapoint key as int[2] (eg. [2,3])
+        String key = str(dpKey[0]) + "," + str(dpKey[1]); //Key is "cell x-number","cell y-number" (eg. 2,3)
         ArrayList dataPointList = getDataPointArrayList(key); 
         
+        //Add datapoint to 'dataPointListMap'. Create new Arraylist if none exists
         if (dataPointList == null) {
             //println("Point placed in empty cell");
             
@@ -90,9 +94,10 @@ class Storage {
             dataPointList.add(dp);
         }
     }
-
-
+    
+    
     public void addWalls(ArrayList<WallSegment> wallsToAdd) {
+        //Takes an ArrayList with WallSegments and adds all to wallsList
         for (WallSegment segment : wallsToAdd) {
             wallsList.add(segment);
         }
@@ -144,13 +149,13 @@ class Storage {
         String[] foundNeighbors = {};
         
         //Splitting the string and parse to int
-        String[] keys = split(centerKey, ',');
-        int[] keysAsInt = {int(keys[0]), int(keys[1])};
+        String[] keys = split(centerKey, ','); //2,3 --> ["2", "3"]
+        int[] keysAsInt = {int(keys[0]), int(keys[1])}; //["2", "3"] --> [2, 3]
         
         //Find all neighbors in radius
         for (int xSearch = -radius; xSearch <= radius; xSearch++) {
             for (int ySearch = -radius; ySearch <= radius; ySearch++) {
-                String xKey = str(keysAsInt[0] + xSearch);
+                String xKey = str(keysAsInt[0] + xSearch); //Add current cell difference to center key
                 String yKey = str(keysAsInt[1] + ySearch);
                 //println("Neighbor: " + xKey + "," + yKey);
                 foundNeighbors = append(foundNeighbors, xKey + "," + yKey);
@@ -164,12 +169,14 @@ class Storage {
     //Methods below this line are NOT supposed to be invoked from outside class//
     //-------------------------------------------------------------------------//
     private void updateLastSave(DataPoint dpToAdd) {
+        //Sets newsets datapoint as latest
         lastDataPoint = dpToAdd;
         if (dpToAdd.getObstacle()) lastObstacle = dpToAdd;
     }
     
     
     private int[] getDataPointKey(DataPoint dp) {
+        //Takes a dataPoint and returns the key as int[xkey, ykey]
         int xKey = dp.getXpos() / cellResolution;
         int yKey = dp.getYpos() / cellResolution;
         return new int[]{xKey, yKey};
@@ -179,6 +186,12 @@ class Storage {
 
 class Algorithm {
     //Pass a subclass of 'Algorithm' to a 'VehicleController'
+    //Users can write a other angorithms. The methods are called in following order
+    //requestTargetData()       Returns an ArrayList with DataRequests
+    //calculateTarget()         Takes an ArrayList with full DataRequests and returns target as int[x, y] 
+    //requestWalltData()        Returns an ArrayList with DataRequests
+    //calculateWallSegment()    Takes an ArrayList with full DataRequests and returns an Arraylist with WallSegments
+    //NOTE: The Algorithm-objetcs are NOT ment to be destroyed / they can hold presistant variables
     Algorithm() {}
     
     
@@ -209,13 +222,18 @@ class Algorithm {
 
 
 class WallFollowAlgorithm extends Algorithm {
+    //A simple algorithm that follows walls
+    //Below: Extra variables this algorihm requires
     HashMap<String, ArrayList<DataPoint>> dataPointListMap;
     int[] lastPosition = {0,0};
     int[] lastObstacle = {0,0};
     int lastObstacleAngle = 0;
     String[] lastNeighbors;
+    int neighborSearchLength;
     
-    WallFollowAlgorithm() {}
+    WallFollowAlgorithm(int neighborSearchLength) {
+        this.neighborSearchLength = neighborSearchLength;
+    } 
     
     
     @Override
@@ -227,7 +245,7 @@ class WallFollowAlgorithm extends Algorithm {
             println("Same square ");
             float dx = 15 * sin(lastObstacleAngle * (PI / 180));
             float dy = 15 * cos(lastObstacleAngle * (PI / 180));
-            println("dx: " + dx + " - dy: " + dy);
+            //println("dx: " + dx + " - dy: " + dy);
             
             target[0] = lastObstacle[0] + int( -dx);
             target[1] = lastObstacle[1] + int( -dy);
@@ -235,7 +253,7 @@ class WallFollowAlgorithm extends Algorithm {
             float newAngle = lastObstacleAngle + 90;
             float dx = 30 * sin(newAngle * (PI / 180));
             float dy = 30 * cos(newAngle * (PI / 180));
-            println("dx: " + dx + " - dy: " + dy);
+            //println("dx: " + dx + " - dy: " + dy);
             
             target[0] = lastPosition[0] + int( -dx);
             target[1] = lastPosition[1] + int( -dy);
@@ -243,7 +261,7 @@ class WallFollowAlgorithm extends Algorithm {
             float newAngle = lastObstacleAngle - 90;
             float dx = 30 * cos(newAngle * (PI / 180));
             float dy = 30 * sin(newAngle * (PI / 180));
-            println("dx: " + dx + " - dy: " + dy);
+            //println("dx: " + dx + " - dy: " + dy);
             
             target[0] = lastPosition[0] + int(dx);
             target[1] = lastPosition[1] + int( -dy);  
@@ -264,7 +282,8 @@ class WallFollowAlgorithm extends Algorithm {
             if (dataPointAL == null) continue; //No list = no potential wall = go to next neighbor
             
             for (DataPoint dpElement : dataPointAL) { //If a cell hsa points, loop through all points
-                if ((dpElement.getAngle() - lastObstacleAngle) < 20 && dpElement.getObstacle()) { 
+                //println("angles: " + dpElement.getAngle() + "  " + lastObstacleAngle);
+                if (abs(dpElement.getAngle() - lastObstacleAngle) < 20 && dpElement.getObstacle()) { 
                     wsToAdd.add(new WallSegment(dpElement.getXpos(), dpElement.getYpos(), 
                         lastObstacle[0], lastObstacle[1]));        
                 }
@@ -276,6 +295,7 @@ class WallFollowAlgorithm extends Algorithm {
     
     @Override
     public ArrayList<DataRequest> requestTargetData() {
+        //This algorithm needs lastPosition, lastObstacle, lastObstacleAngle
         ArrayList<DataRequest> requestedDataPackage = super.requestTargetData();
         requestedDataPackage.add(new DataRequest(Requests.get("lastPosition")));
         requestedDataPackage.add(new DataRequest(Requests.get("lastObstacle")));
@@ -288,8 +308,10 @@ class WallFollowAlgorithm extends Algorithm {
     public ArrayList<DataRequest> requestWalltData() {
         //Returns an arraylist with needed data to calculate next target
         ArrayList<DataRequest> requestedDataPackage = super.requestTargetData();
-        String extraData = str(lastObstacle[0] / 10) + "," + str(lastObstacle[1] / 10) + ";" + str(2);
-        println("extraData: " + extraData);
+
+        //neighborKeys needs the field 'extraData' to know centerKey and 
+        String extraData = str(lastObstacle[0] / 10) + "," + str(lastObstacle[1] / 10) + ";" + str(neighborSearchLength);
+        //println("extraData: " + extraData);
         requestedDataPackage.add(new DataRequest(Requests.get("neighborKeys")).setExtraData(extraData));
         requestedDataPackage.add(new DataRequest(Requests.get("dataPointListMap")));
         requestedDataPackage.add(new DataRequest(Requests.get("lastObstacle")));
@@ -303,6 +325,7 @@ class WallFollowAlgorithm extends Algorithm {
         //Returns true if unpacked successfully
         if (requestedDataPackage.size() != 4) return false;
         
+        //Data is returned as 'Object'. Programmer must know type
         lastPosition = (int[])requestedDataPackage.get(0).getData();
         lastObstacle = (int[])requestedDataPackage.get(1).getData();
         lastObstacleAngle = (Integer)requestedDataPackage.get(2).getData();
@@ -322,15 +345,12 @@ class WallFollowAlgorithm extends Algorithm {
 }
 
 
-
-
-
-
 class VehicleController {
+    //Controls the vehicle by using a ComDevice. Algorithm and Storage used to generete walls and targets
     Algorithm algorithm;
     Storage storage;
     ComDevice arduino;
-    int[] lastCommandContent;
+    int[] lastCommandContent; //Last command send; used to resend command when timeout
     int lastCommandID;
     
     
@@ -343,20 +363,22 @@ class VehicleController {
     
     public void update() {
         //called every frame
-        arduino.update();
+        arduino.update(); //Read and parse data from vehicle / arduino
     }
     
     
     public void resendLastCommand() {
+        //Called when no answer is recived from vehicle
         arduino.sendCommand(lastCommandID, lastCommandContent);
     }
     
     
-    public int[]generateNewTarget() {
-        ArrayList<DataRequest> requiredData = algorithm.requestTargetData();
-        requiredData = fulfillDataRequest(requiredData);
-        int[] target = algorithm.calculateTarget(requiredData);
-        storage.setCurrentTarget(target);
+    public int[] generateNewTarget() {
+        //Genereates a new taget based on points
+        ArrayList<DataRequest> requiredData = algorithm.requestTargetData(); //Get Arraylist with requests
+        requiredData = fulfillDataRequest(requiredData); //Fufill the requests
+        int[] target = algorithm.calculateTarget(requiredData); //Send the fufulled requests back to algorihm object
+        storage.setCurrentTarget(target); //Save new taget to storage
         return target;
     }
     
@@ -370,20 +392,22 @@ class VehicleController {
     
     
     public boolean driveToTarget(int[] target) {
+        //Takes a target int[] and commands vehicle. Returns true if array has two elemetns
         if (target.length != 2) return false;
         arduino.sendCommand(1, new int[]{target[0], target[1]});
         lastCommandID = 1;
         lastCommandContent = target;
         return true;
     }
-
-
+    
+    
     public void addWallSegmentsToStorage(ArrayList<WallSegment> wallsToAdd) {
         storage.addWalls(wallsToAdd);
     }
     
     
     public void stopVehicle() {
+        //Sends stop commands
         arduino.sendCommand(2, new int[]{});
         lastCommandID = 2;
         lastCommandContent = new int[]{};
@@ -391,6 +415,7 @@ class VehicleController {
     
     
     public void requestArduinoStatus() {
+        //Send command 0
         arduino.sendCommand(0, new int[]{});
         lastCommandID = 0;
         lastCommandContent = new int[]{};
@@ -407,7 +432,7 @@ class VehicleController {
     }
     
     
-    public int[]getArduinoReponseData() {
+    public int[] getArduinoReponseData() {
         return this.arduino.getReponseData();
     }
     
@@ -422,13 +447,35 @@ class VehicleController {
     }
     
     
+    public String[] exportDataPoints() {
+        //Exports data to a String[]. One dataPoint pr. element.
+        //xpos;ypos;angle;obstacle (int;int;int:bool)
+        String[] exportedData = {};
+        
+        for (ArrayList < DataPoint > dataPointList : storage.getDataPointListMap().values()) {
+            for (DataPoint CurrentDataPoint : dataPointList) {
+                int dpXpos = CurrentDataPoint.getXpos();
+                int dpYpos = CurrentDataPoint.getYpos();
+                int dpAngle = CurrentDataPoint.getAngle();
+                int dpObstacle = CurrentDataPoint.getObstacle() ? 1 : 0; 
+                String dataLine = str(dpXpos) + ";" + str(dpYpos) + ";" + str(dpAngle) + ";" + str(dpObstacle); 
+                exportedData = append(exportedData, dataLine);
+                //println(dataLine);
+            }
+        }
+        
+        return exportedData;
+    }
+    
+    
     //Methods below this line are NOT supposed to be invoked from outside class//
     //-------------------------------------------------------------------------//
     private ArrayList<DataRequest> fulfillDataRequest(ArrayList<DataRequest> request) {
+        //Takes a ArrayList<DataRequest> and returns ArrayList<DataRequest> but with DataRequest fufilled
         for (DataRequest dr : request) {
             int requestID = dr.getID();
             //println("requestID: " + requestID);
-            switch(requestID) {
+            switch(requestID) { //RequestID = what data to fill
                 case 0:
                     dr.setData(this.storage);
                     break;
@@ -485,7 +532,7 @@ class VehicleController {
             int lastYpos = storage.getLastObstacle().getYpos();
             return new int[]{lastXpos, lastYpos};
         } catch(Exception e) {
-            //If no obstacle is encountered yew
+            //Ifno obstacle is encountered yew
             return new int[]{0,0};
         }
     }
@@ -496,13 +543,14 @@ class VehicleController {
         try {
             return storage.getLastObstacle().getAngle();
         } catch(Exception e) {
-            //If no obstacle is encountered yew
+            //Ifno obstacle is encountered yew
             return 0;
         }
     }
     
     
     private String[] fulfullRequest4(DataRequest request) {
+        //Returns a list of neigblors
         String extraData = request.getExtraData(); //key;radius (eg. 12,3;4)
         String[] splitExtraData = split(extraData, ';');
         String[] foundNeighbors = storage.getNeighbors(splitExtraData[0], int(splitExtraData[1]));
@@ -519,16 +567,17 @@ class VehicleController {
     
     
     private HashMap<String, ArrayList<DataPoint>> fulfullRequest6() {
+        //Returns whole HashMap with data
         return storage.getDataPointListMap();
     }
 }
 
 
 class DataRequest {
-    //Object carrying a request and the returned data
-    int requestID;
-    String extraData;
-    Object requestedData;
+    //Objectcarrying a request and the returned data
+    int requestID; //ID - See constants.pde for explanation
+    String extraData; //Extradata used to carry mere info about request
+    Object requestedData; //Data to be returned
     
     
     DataRequest(int requestID) {
