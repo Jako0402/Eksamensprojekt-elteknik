@@ -2,36 +2,11 @@
 #include "motor.h"
 #include "Definitions.h"
 
-// Begin Jakob indsat
-#include <SPI.h>
-
-#include "src/RF24/RF24.h"
-#include "src/RF24/nRF24L01.h"
-#include "src/RF24/printf.h"
-
-RF24 radio(7, 8);  // CE, CSN
-const byte stationAddress[6] = "00001";
-const byte vehicleAddress[6] = "00002";
-String toSend;
-String lastRecived;
-int commandArr[5];
-int arrLenth;
-int contactStatus = -1;
-// End Jakob indsat
-
-long tid = 0;
-long tid2 = 0;
-
-
 void setup() {
-  // Begin Jakob indsat
   radio.begin();
   radio.openWritingPipe(stationAddress);     // 00001
   radio.openReadingPipe(1, vehicleAddress);  // 00002
   radio.startListening();
-  // End Jakob indsat
-
-  delay(1000);
 
   pins();
 
@@ -40,104 +15,42 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(interruptPin), left_encoder_trigger, CHANGE);    // Tæller encoderen for venstre hjul
   attachInterrupt(digitalPinToInterrupt(interruptPin2), right_encoder_trigger, CHANGE);  // Tæller encoderen for højre hjul
 
-  // left_motor_speed = 50;
-  // right_motor_speed = 40;
-  left_motor_speed = 0;
-  right_motor_speed = 0;
-
-  left_motor.drive(left_motor_speed);
+  left_motor.drive(vehicle_speed);
   right_motor.drive(right_motor_speed);
-
-  /*
-      Serial.println(wheel_diameter, 4);
-      Serial.println(wheel_circumference, 4);
-      Serial.println(encoder_measurements);
-      Serial.println(measurement_length, 4);
-      Serial.println(rotation_diameter);
-      Serial.println(rotation_circumference, 4);
-      Serial.println(measurement_rotation, 4);
-      Serial.println(measurement_forward, 4);
-      Serial.println(measurement_sideways, 4);
-  */
 }
 
+unsigned long test_tid = 0;
 
 void loop() {
-  testRadio();
 
-  /*
-    Serial.println("");
-    Serial.print("Venstre encoder: ");
-    Serial.println(count_left_encoder);
-    Serial.print("Højre encoder: ");
-    Serial.println(count_right_encoder);
-    Serial.print("X-koordinat: ");
-    Serial.println(vehicle_X);
-    Serial.print("Y-koordinat: ");
-    Serial.println(vehicle_Y);
-    Serial.print("radianer: ");
-    Serial.println(vehicle_angle);
-  */
-
-  /*
-    switch (state) {
-      case 0:
-        find_point();
-        break;
-      case 1:
-        get_point();
-        break;
-      case 112:
-        stop_();
-        break;
-    }
-
-    if ((millis() - speed_change) > 500) {
-      Serial.print("venstre ");
-      Serial.println(count_left_encoder);
-      Serial.print("Højre   ");
-      Serial.println(count_right_encoder);
-      speed_change = millis();
-    }
-  */
-
-  if ((millis() - tid2) > 1000) {
-    /*
-      Serial.print("Højre encoder: ");
-      Serial.println(count_right_encoder);
-      Serial.print("Venstre encoder: ");
-      Serial.println(count_left_encoder);
-      Serial.print("Højre motor's hastighed: ");
-      Serial.println(right_motor_speed);
-      Serial.print("position: (");
-      Serial.print(vehicle_X);
-      Serial.print(";");
-      Serial.print(vehicle_Y);
-      Serial.println(")");
-      Serial.print("radianer: ");
-      Serial.println(vehicle_angle);
-      Serial.println("");
-    */
-    // sendPosition();
-
-    tid2 = millis();
-  }
-
-  if ((millis() - tid) > 100) {
-    if (count_left_encoder < count_right_encoder) {
-      right_motor_speed--;
-      count_left_encoder = 0;
-      count_right_encoder = 0;
-    }
-    if (count_left_encoder > count_right_encoder) {
-      right_motor_speed++;
-      count_left_encoder = 0;
-      count_right_encoder = 0;
-    }
-    left_motor.drive(left_motor_speed);
-    right_motor.drive(right_motor_speed);
-
-    tid = millis();
+  switch (state) {
+    case 0:
+      if (millis() - test_tid > 100) {
+        Serial.println("State 0");
+        test_tid = millis();
+      }
+      testRadio();
+      break;
+    case 1:
+      if (millis() - test_tid > 100) {
+        Serial.println("State 1");
+        test_tid = millis();
+      }
+      aim_at_point(target_X, target_Y);
+      break;
+    case 2:
+      if (millis() - test_tid > 100) {
+        Serial.println("State 2");
+        test_tid = millis();
+      }
+      find_point();
+    case 3:
+      if (millis() - test_tid > 100) {
+        Serial.println("State 3");
+        test_tid = millis();
+      }
+      point_found();
+      break;
   }
 }
 
@@ -145,11 +58,12 @@ void loop() {
 void left_encoder_trigger() {
   detachInterrupt(digitalPinToInterrupt(interruptPin2));
   count_left_encoder++;
-  if (left_motor_speed > 0) {
+  left_motor_calibrator++;
+  if (vehicle_speed > 0) {
     vehicle_X += ((sin(vehicle_angle + measurement_rotation) * measurement_length) / 2);  // Der lægges til dens X- og Y-postition afhængig af bilens vinkel.
     vehicle_Y += ((cos(vehicle_angle + measurement_rotation) * measurement_length) / 2);  // afhængig af én måling. Der deles med to, da bilens koordinat er midten hjulene.
     vehicle_angle += measurement_rotation;
-  } else {
+  } else if (vehicle_speed < 0) {
     vehicle_X -= ((sin(vehicle_angle + measurement_rotation) * measurement_length) / 2);  // Der trækkes fra dens X- og Y-postition afhængig af bilens vinkel.
     vehicle_Y -= ((cos(vehicle_angle + measurement_rotation) * measurement_length) / 2);  // afhængig af én måling. Der deles med to, da bilens koordinat er midten hjulene.
     vehicle_angle -= measurement_rotation;
@@ -160,6 +74,7 @@ void left_encoder_trigger() {
 
 void right_encoder_trigger() {
   count_right_encoder++;
+  right_motor_calibrator++;
   if (right_motor_speed > 0) {
     vehicle_X += ((sin(vehicle_angle - measurement_rotation) * measurement_length) / 2);
     vehicle_Y += ((cos(vehicle_angle - measurement_rotation) * measurement_length) / 2);
@@ -174,7 +89,18 @@ void right_encoder_trigger() {
 
 // https://components101.com/microcontrollers/arduino-uno
 
-// Begin Jakob indsat
+void check_status () {
+  if (contactStatus = -1) {  //Ingen forhindring - klar til ny kommando
+    vehicle_stop();
+    sendPosition();
+  }
+  if (contactStatus = 0) {   //Ingen forhindring - kører endnu
+    sendPosition();
+  }
+  if (contactStatus <= 5 && contactStatus >= 1) { //forhindring opdaget - klar til ny kommando
+    send_point_found();
+  }
+}
 
 void sendPosition() {
   // Sends data (respons nr. 0)
@@ -183,7 +109,7 @@ void sendPosition() {
   toSend += ";";
   toSend += int(vehicle_Y);
   toSend += ";";
-  toSend += int(int(vehicle_angle * (360 / (2 * PI))));   //omregner til grader
+  toSend += int(int(vehicle_angle * (360 / (2 * PI))));   //omregner radianer til grader
   toSend += ";";
   toSend += contactStatus;
   toSend += "!";
@@ -191,12 +117,28 @@ void sendPosition() {
   //Serial.print(toSend);
 
   pushStuff();
-
 }
 
+void send_point_found () {
+  // Sends data (respons nr. 1 - 5)
+  toSend = "?";
+  toSend += int(0);
+  toSend += ";";
+  toSend += int(point_found_X);
+  toSend += ";";
+  toSend += int(point_found_Y);
+  toSend += ";";
+  toSend += int(int(vehicle_angle * (360 / (2 * PI))));   //omregner til grader
+  toSend += ";";
+  toSend += contactStatus;
+  toSend += "!";
+  toSend += char(generateCS(toSend));
+
+  pushStuff();
+}
 
 void pushStuff() {
-  delay(100);
+  delay(50);
   char textToSend[32];
   toSend.toCharArray(textToSend, 32);
 
@@ -216,35 +158,13 @@ byte generateCS(String inputStr) {
 }
 
 
-void testRadio() {
-  // Writes recived radio-data to serial and activaes LED
-  if (radio.available()) {
-    char text[32] = {0};
-    radio.read(&text, sizeof(text));
-    Serial.println(text);
-    status_led.on();
-    lastRecived = String(text);
-
-    if (checkData(lastRecived) != 0) {
-      Serial.println(checkData(lastRecived));
-      status_led.off();
-
-    } else {
-      // Good package
-      splitGoodPackage();
-      handleCommand();
-    }
-  }
-}
-
-
 bool handleCommand() {
   int commandID = commandArr[0];
   switch (commandID) {
     case 0:
       Serial.println("Command 0");
       if (arrLenth != 0 + 1) return false;
-      sendPosition();
+      check_status();
       break;
 
     case 1:
@@ -267,7 +187,7 @@ bool handleCommand() {
 
 
 void stopDriving() {        //Stopper bilen
-  left_motor_speed = 0;
+  vehicle_speed = 0;
   right_motor_speed = 0;
 
   toSend = "?2!";
@@ -277,21 +197,31 @@ void stopDriving() {        //Stopper bilen
 
 
 void setNewTarget(int targetX, int targetY) {       //Sigter efter et nyt punkt, som Processing sender
+
+  vehicle_stop();
+
+  target_X = targetX;
+  target_X = targetY;
+  
   Serial.print("New target: ");
   Serial.print(targetX);
   Serial.print(" and ");
   Serial.println(targetY);
-  left_motor_speed = 80;
-  right_motor_speed = 70;
 
-
-  toSend  = "?1;";
+  toSend = "?1;";
   toSend += targetX;
   toSend += ";";
   toSend += targetY;
   toSend += "!";
   toSend += char(generateCS(toSend));
   pushStuff();
+
+  delta_X = vehicle_X - targetX;
+  delta_Y = vehicle_Y - targetY;
+
+  distance_to_point = sqrt((delta_X * delta_X) + (delta_Y * delta_Y));
+
+  state = 1;  //sigter efter punkt
 }
 
 
@@ -316,6 +246,8 @@ void splitGoodPackage() {
     }
   }
   arrLenth = index;
+  target_X = commandArr[2];
+  target_Y = commandArr[3];
 }
 
 
@@ -371,19 +303,95 @@ int checkData(String dataToCheck) {
   index++;
   if (dataToCheck[index] != '!') return 6;  // End character must be '!'
 
-  /*
-      Serial.println(dataToCheck);
-      Serial.print("expectedCS: ");
-      Serial.println(char(expectedCS));
-      Serial.print("  int: ");
-      Serial.println(expectedCS);
-
-      Serial.print("receivedCS: ");
-      Serial.println(char(receivedCS));
-      Serial.print("  int: ");
-      Serial.println(receivedCS);
-  */
   return 0;
 }
 
-// End Jakob indsat
+void drive_forward() {  //Kører ligeud - regulerer højre hjuls hastighed imens
+  if (millis() - last_speed_change > 100) {               //Er der gået 100 ms siden sidste hastighedsændring?
+    if (left_motor_calibrator < right_motor_calibrator) { //Er det højre hjul hurtigere end det venstre?
+      right_motor_speed--;
+    } else if (left_motor_calibrator > right_motor_calibrator) {  //Er det højre hjul langsommere end det venstre?
+      right_motor_speed++;
+    }
+    if (vehicle_speed < 0) {  //Søger for at venstre hjul drejer rigtige vej rundt
+      vehicle_speed = -vehicle_speed;
+    }
+    if (right_motor_speed < 0) {  //Søger for at højre hjul drejer rigtige vej rundt
+      right_motor_speed = -right_motor_speed;
+    }
+    left_motor.drive(vehicle_speed);
+    right_motor.drive(right_motor_speed);
+    last_speed_change = millis();
+    left_motor_calibrator = 0;
+    right_motor_calibrator = 0;
+  }
+}
+
+void drive_backward() {  //Kører baggud - regulerer højre hjuls hastighed imens
+  if (millis() - last_speed_change > 100) {               //Er der gået 100 ms siden sidste hastighedsændring?
+    if (left_motor_calibrator < right_motor_calibrator) { //Er det højre hjul hurtigere end det venstre?
+      right_motor_speed--;
+    } else if (left_motor_calibrator > right_motor_calibrator) {  //Er det højre hjul langsommere end det venstre?
+      right_motor_speed++;
+    }
+    if (vehicle_speed > 0) {  //Søger for at venstre hjul drejer baglæns
+      vehicle_speed = -vehicle_speed;
+    }
+    if (right_motor_speed > 0) {  //Søger for at højre hjul drejer baglæns
+      right_motor_speed = -right_motor_speed;
+    }
+    left_motor.drive(vehicle_speed);
+    right_motor.drive(right_motor_speed);
+    last_speed_change = millis();
+    left_motor_calibrator = 0;
+    right_motor_calibrator = 0;
+  }
+}
+
+void turn_left() {  //Drejer mod venstre - regulerer højre hjuls hastighed imens
+  if (millis() - last_speed_change > 100) {               //Er der gået 100 ms siden sidste hastighedsændring?
+    if (left_motor_calibrator < right_motor_calibrator) { //Er det højre hjul hurtigere end det venstre?
+      right_motor_speed--;
+    } else if (left_motor_calibrator > right_motor_calibrator) {  //Er det højre hjul langsommere end det venstre?
+      right_motor_speed++;
+    }
+    if (vehicle_speed < 0) {  //Søger for at venstre hjul drejer fremmad
+      vehicle_speed = -vehicle_speed;
+    }
+    if (right_motor_speed > 0) {  //Søger for at højre hjul drejer baglæns
+      right_motor_speed = -right_motor_speed;
+    }
+    left_motor.drive(vehicle_speed);
+    right_motor.drive(right_motor_speed);
+    last_speed_change = millis();
+    left_motor_calibrator = 0;
+    right_motor_calibrator = 0;
+  }
+}
+
+void turn_right() {  //Drejer mod højre - regulerer højre hjuls hastighed imens
+  if (millis() - last_speed_change > 100) {               //Er der gået 100 ms siden sidste hastighedsændring?
+    if (left_motor_calibrator < right_motor_calibrator) { //Er det højre hjul hurtigere end det venstre?
+      right_motor_speed++;
+    } else if (left_motor_calibrator > right_motor_calibrator) {  //Er det højre hjul langsommere end det venstre?
+      right_motor_speed--;
+    }
+    Serial.println(right_motor_speed);
+    if (vehicle_speed < 0) {  //Søger for at venstre hjul drejer fremmad
+      vehicle_speed = -vehicle_speed;
+    }
+    if (right_motor_speed > 0) {  //Søger for at højre hjul drejer fremmad
+      right_motor_speed = -right_motor_speed;
+    }
+    left_motor.drive(vehicle_speed);
+    right_motor.drive(right_motor_speed);
+    last_speed_change = millis();
+    left_motor_calibrator = 0;
+    right_motor_calibrator = 0;
+  }
+}
+
+void vehicle_stop() { //Stopper køretøjet
+  left_motor.drive(0);
+  right_motor.drive(0);
+}
