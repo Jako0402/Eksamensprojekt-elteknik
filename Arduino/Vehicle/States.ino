@@ -71,12 +71,28 @@ void find_point() { //Kører ligeud indtil køretøjet kører væk fra punktet e
     if (noiseCount > 5) {
       Serial.print("Knap ");
       Serial.println(i + 1);
+<<<<<<< HEAD
       noiseCount = 0;
       last_contact = millis();
       contactStatus = i;
       point_found_X = vehicle_X;
       point_found_Y = vehicle_Y;
       state = 3;  //Der er fundet et punkt
+=======
+      switch (state) {  //Skifter til stadiet "point_found"
+        case 0:
+          state = 1;
+          break;
+      }
+    }
+  }
+  if (digitalRead(18)) {
+    switch (state) {  //Skifter til stadiet "stop"
+      case 0:
+        state = 112;
+        break;
+
+>>>>>>> 0d550c0fe372b87b111f5b5208a754098cdbc280
     }
   }
 }
@@ -85,10 +101,35 @@ void point_found() {
   vehicle_speed = 100;
   right_motor_speed = 90;
 
+<<<<<<< HEAD
   if (millis() - last_contact < 1000) {   //bakker i 1 sekund, for derefter at stoppe
     drive_backward();
   } else {
     vehicle_stop();
+=======
+  switch (state) {  //Skifter
+    case 1:         //til
+      state = 0;    //stadiet
+      left_motor.drive(left_motor_speed);
+      right_motor.drive(right_motor_speed);
+      break;        //"find_point"
+  }
+}
+
+void stop_ () {
+
+  left_motor.drive(0);
+  right_motor.drive(0);
+
+  if (digitalRead(14)) {
+    switch (state) {  //Skifter
+      case 112:       //til
+        state = 0;    //stadiet
+        left_motor.drive(left_motor_speed);
+        right_motor.drive(right_motor_speed);
+        break;        //"find_point"
+    }
+>>>>>>> 0d550c0fe372b87b111f5b5208a754098cdbc280
   }
 
   state = 0;  //venter på at den får et nyt punkt at sigte efter.

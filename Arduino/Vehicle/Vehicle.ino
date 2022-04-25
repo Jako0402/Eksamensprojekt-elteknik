@@ -23,6 +23,7 @@ unsigned long test_tid = 0;
 
 void loop() {
 
+<<<<<<< HEAD
   switch (state) {
     case 0:
       if (millis() - test_tid > 100) {
@@ -52,6 +53,84 @@ void loop() {
       point_found();
       break;
   }
+=======
+  /*
+    Serial.println("");
+    Serial.print("Venstre encoder: ");
+    Serial.println(count_left_encoder);
+    Serial.print("Højre encoder: ");
+    Serial.println(count_right_encoder);
+    Serial.print("X-koordinat: ");
+    Serial.println(vehicle_X);
+    Serial.print("Y-koordinat: ");
+    Serial.println(vehicle_Y);
+    Serial.print("radianer: ");
+    Serial.println(vehicle_angle);
+  */
+
+  /*
+    switch (state) {
+      case 0:
+        find_point();
+        break;
+      case 1:
+        get_point();
+        break;
+      case 112:
+        stop_();
+        break;
+    }
+
+    if ((millis() - speed_change) > 500) {
+      Serial.print("venstre ");
+      Serial.println(count_left_encoder);
+      Serial.print("Højre   ");
+      Serial.println(count_right_encoder);
+      speed_change = millis();
+    }
+  */
+
+  if ((millis() - tid2) > 1000) {
+    /*
+      Serial.print("Højre encoder: ");
+      Serial.println(count_right_encoder);
+      Serial.print("Venstre encoder: ");
+      Serial.println(count_left_encoder);
+      Serial.print("Højre motor's hastighed: ");
+      Serial.println(right_motor_speed);
+      Serial.print("position: (");
+      Serial.print(vehicle_X);
+      Serial.print(";");
+      Serial.print(vehicle_Y);
+      Serial.println(")");
+      Serial.print("radianer: ");
+      Serial.println(vehicle_angle);
+      Serial.println("");
+    */
+    // sendPosition();
+
+    tid2 = millis();
+  }
+
+    if ((millis() - tid) > 100) {
+      if (count_left_encoder < count_right_encoder) {
+        right_motor_speed--;
+        count_left_encoder = 0;
+        count_right_encoder = 0;
+      }
+      if (count_left_encoder > count_right_encoder) {
+        right_motor_speed++;
+        count_left_encoder = 0;
+        count_right_encoder = 0;
+      }
+      left_motor.drive(left_motor_speed);
+      right_motor.drive(right_motor_speed);
+
+      tid = millis();
+    }
+
+
+>>>>>>> 0d550c0fe372b87b111f5b5208a754098cdbc280
 }
 
 
